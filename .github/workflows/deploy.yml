@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: deploy
-          depth: 0
+          fetch-depth: 0
       - name: Merge main into deploy
         run: git merge main
       - name: Setup babashka
