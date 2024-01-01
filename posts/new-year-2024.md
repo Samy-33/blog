@@ -54,7 +54,7 @@ I came across a few people in last few years that have inspired me to write. And
 
 I wanted to start writing but before that I needed to build a blogging platform with a great design and implementation in `clojure`. Unfortunately, I always procrastinated building it as I was less experienced and I didn't want to realise that I don't have enough knowledge about it either.
 
-Late in 2023, I was going through the mighty [borkdue's](https://github.com/borkdude) socials and found the [quickblog](https://github.com/borkdude/quickblog), a light-weight static blog engine for Clojure and babashka. It got me started within a minute, and I am grateful for this product. Thanks Michiel.
+Late in 2023, I was going through the mighty [borkdude's](https://github.com/borkdude) socials and found the [quickblog](https://github.com/borkdude/quickblog), a light-weight static blog engine for Clojure and babashka. It got me started within a minute, and I am grateful for this product. Thanks Michiel.
 
 ## Goals for 2024
 I am not one of those people who chooses new year resolutions at the beginning of the year and as it passes, forgets about them. I forget about them - right away.
