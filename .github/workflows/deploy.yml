@@ -2,6 +2,8 @@ on:
   push:
     branches:
       - main
+env:
+  TZ: Asia/Kolkata
 
 jobs:
   deploy:
@@ -11,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: deploy
+          depth: 0
       - name: Merge main into deploy
         run: git merge main
       - name: Setup babashka
@@ -24,20 +27,12 @@ jobs:
         run: bb quickblog clean
       - name: build
         run: bb quickblog render
-      - name: export commit time
-        run: export COMMIT_TIME=$(git log -1 --format=%cd --date=format:"%d-%m-%Y %H:%M:%S" | cat)
-      - name: commit
-        run: git add * && git commit -m "deploy @ ${COMMIT_TIME}"
-  updateBranch:
-    name: Update deploy branch
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - uses: Embraser01/update-git-branch-action@v1.0.0
-      if: github.ref == 'refs/heads/master'
-      with:
-        branch: staging
-        force: 1 # To push-force to the branch
-        githubToken: ${{ secrets.PAT_TOKEN }} # Github Token
+      - name: git 
+        run: |
+          git config --global user.email "saket.is.sam@gmail.com"
+          git config --global user.name "Samy-33"
+          export CURRENT_TIME=$(date)
+          git add *
+          git commit -m "deploy @ ${CURRENT_TIME}"
 
   
