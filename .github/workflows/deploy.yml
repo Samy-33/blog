@@ -15,7 +15,7 @@ jobs:
           ref: deploy
           fetch-depth: 0
       - name: Merge main into deploy
-        run: git merge main
+        run: git merge origin/main
       - name: Setup babashka
         # You may pin to the exact commit or the version.
         # uses: just-sultanov/setup-babashka@4aac6224e2b70964bc51b85f0f31bd1505a3f36d
@@ -27,12 +27,13 @@ jobs:
         run: bb quickblog clean
       - name: build
         run: bb quickblog render
-      - name: git 
+      - name: git
         run: |
           git config --global user.email "saket.is.sam@gmail.com"
           git config --global user.name "Samy-33"
           export CURRENT_TIME=$(date)
           git add *
           git commit -m "deploy @ ${CURRENT_TIME}"
+          git push origin -u deploy
 
   
