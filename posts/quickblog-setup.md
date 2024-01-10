@@ -1,5 +1,5 @@
 Title: Self hosting personal blog
-Date: 2024-01-02
+Date: 2024-01-10
 Tags: tools, blog, babashka, clojure
 Twitter-Handle: saak3t
 Description: Hosting your personal blog
