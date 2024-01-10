@@ -84,7 +84,7 @@ Run a live reloading server using `bb quickblog watch`, it spins up a http serve
 
 Write your blog post, initialize the `blog` directory as a git repository and commit your markdown changes. You would also want to add a `.gitignore` file that excludes some directories from committing like `.work`, `.lsp` and `.clj-kondo`. We will also exclude the `public` directory from the commit to keep the main branch clean.
 
-# Setting up github action
+## Setting up github action
 Via github action, we will
 * Switch to `deploy` branch
 * Generate the static files
