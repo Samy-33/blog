@@ -19,13 +19,13 @@ In this post, we will
 * Set up a blog repository using quickblog
 * Host it on github
 * Write a github action config to generate static files on push to `main` branch
-* Set up up a CI pipeline on cloudflare to host the site
-* Point a costum domain to the blog site
+* Set up a CD pipeline on cloudflare to deploy the blog
+* Point a custom domain to the blog site
 
 ## What is quickblog?
 Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.
 
-## Setting up quickblog [id="setup"]
+## Setting up quickblog
 Create a directory that'll hold your blogging engine and blog posts. I will call it `blog`. Inside `blog` directory, create a `bb.edn` file. The structure looks like the following:
 
 ```sh
@@ -45,7 +45,7 @@ Let's add *quickblog* as a dependency in our `deps.edn`.
 ```
 Replace the `:git/tag` and `:git/sha` with the latest ones in [quickblog repository](https://github.com/borkdude/quickblog).
 
-Now we will add a babashka task that hooks into `quickblog` api and exposes its command line tooling.
+Now we will add a babashka task that hooks into `quickblog` api and exposes it as a command line tool.
 
 ```edn
 {:deps {...} ;; folded deps map
@@ -84,8 +84,6 @@ Run a live reloading server using `bb quickblog watch`, it spins up a http serve
 
 Write your blog post, initialize the `blog` directory as a git repository and commit your markdown changes. You would also want to add a `.gitignore` file that excludes some directories from committing like `.work`, `.lsp` and `.clj-kondo`. We will also exclude the `public` directory from the commit to keep the main branch clean.
 
-Upload the repository to github.
-
 # Setting up github action
 Via github action, we will
 * Switch to `deploy` branch
@@ -96,7 +94,7 @@ For this, we will need to allow github actions `write` permissions on the reposi
 
 In your repository, go to the **Settings > Actions > General**. In the `Workflow permissions` select **Read and write permissions** for now. Later, you can spericy more granular permissions [documented here](https://docs.github.com/actions/reference/authentication-in-a-workflow#modifying-the-permissions-for-the-github_token).
 
-Create directory chain and github action config file: `.github/workflows/deploy.yml`.
+Create the github action config file: `.github/workflows/deploy.yml`.
 ```yml
 on:
   push:
@@ -154,7 +152,7 @@ Cloudflare will consider changes on all the branches other than the `Production 
 
 To disable the preview branches, we will go to the project we just setup **-> Settings tab -> Build & deployment -> Configure preview deployments -> None -> Save**. We are done with the setting up our cloudflare page. It should be visible at `<project-identifier>.pages.dev`.
 
-> **Note**: Create a main and deploy branch and push them to our github repository. This will trigger github action build, after which cloudflare page build and you should see you first blog up on the url mentioned above.
+> **Note**: Create the main and deploy branches and push them to our github repository. This will trigger github action build, after which cloudflare page build and you should see you first blog up on the url mentioned above.
 
 ## Setting up custom domain
 Here I am assuming that you already have a domain bought and configured on cloudflare. If you don't, then there are a couple of platforms that I use to find and get best offer for domains:
@@ -164,7 +162,7 @@ Here I am assuming that you already have a domain bought and configured on cloud
 * [BigRock](https://www.bigrock.in)
 * [Hostinger](https://www.hostinger.in/domain-name-search)
 
-Once you get buy a domain, transfer your domain to cloudflare by following [these steps](https://developers.cloudflare.com/registrar/get-started/transfer-domain-to-cloudflare/)
+Once you get a domain, transfer it to cloudflare by following [these steps](https://developers.cloudflare.com/registrar/get-started/transfer-domain-to-cloudflare/).
 
 Setting up a custom domain for your page is simple. Open our page project, and go to **Custom domains** tab. Click on **Set up a custom domain** and follow the steps.
 
