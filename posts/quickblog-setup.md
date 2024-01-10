@@ -1,6 +1,8 @@
 Title: Self hosting personal blog
 Date: 2024-01-02
 Tags: tools, blog, babashka, clojure
+Twitter-Handle: saak3t
+Description: Hosting your personal blog
 
 > This post is aimed at a fairly technical audience. It expects familiarity with *clojure*, *babashka*, *git*, *github*, *cloudflare* and *markdown* syntax.
 
@@ -23,7 +25,7 @@ In this post, we will
 ## What is quickblog?
 Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.
 
-## Setting up quickblog
+## Setting up quickblog [id="setup"]
 Create a directory that'll hold your blogging engine and blog posts. I will call it `blog`. Inside `blog` directory, create a `bb.edn` file. The structure looks like the following:
 
 ```sh
@@ -146,3 +148,26 @@ Create a new cloudflare account if you don't have it already. Log in to the acco
 
 A modal pops up, where you select your Github account and the repository to connect. You'll be redirected to github. Allow access to just the `blog` repository and continue.
 
+Now we go to the next step, add the project name and set the `Production branch` to **deploy** and `Build output directory` to **public**. *Click and deploy*.
+
+Cloudflare will consider changes on all the branches other than the `Production branch`, that we set in the previous step, as preview branches. This means that changes on these other branches will also trigger a build, consuming our precious build quota.
+
+To disable the preview branches, we will go to the project we just setup **-> Settings tab -> Build & deployment -> Configure preview deployments -> None -> Save**. We are done with the setting up our cloudflare page. It should be visible at `<project-identifier>.pages.dev`.
+
+> **Note**: Create a main and deploy branch and push them to our github repository. This will trigger github action build, after which cloudflare page build and you should see you first blog up on the url mentioned above.
+
+## Setting up custom domain
+Here I am assuming that you already have a domain bought and configured on cloudflare. If you don't, then there are a couple of platforms that I use to find and get best offer for domains:
+
+* [Namecheap](https://www.namecheap.com/)
+* [GoDaddy](https://www.godaddy.com/)
+* [BigRock](https://www.bigrock.in)
+* [Hostinger](https://www.hostinger.in/domain-name-search)
+
+Once you get buy a domain, transfer your domain to cloudflare by following [these steps](https://developers.cloudflare.com/registrar/get-started/transfer-domain-to-cloudflare/)
+
+Setting up a custom domain for your page is simple. Open our page project, and go to **Custom domains** tab. Click on **Set up a custom domain** and follow the steps.
+
+> **PS**: There are multiple ways to host your blog, and probably most of them would be simpler than this setup. It was my first time setting up my blog, and can certainly be improved. Will post an update when I migrate to a better pipeline. A similar post: [Quickblog by Anders Means Different](https://www.eknert.com/blog/quickblog)
+
+> If you find an error or have a question, open an [issue](https://github.com/Samy-33/blog/issues/new).
