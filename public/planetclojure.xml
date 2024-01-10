@@ -3,9 +3,78 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-01-01T09:44:27+00:00</updated>
+  <updated>2024-01-10T16:52:49+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/quickblog-setup.html</id>
+    <link href="https://github.com/borkdude/quickblog/quickblog-setup.html"/>
+    <title>Self hosting personal blog</title>
+    <updated>2024-01-10T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<blockquote><p> This post is aimed at a fairly technical audience. It expects familiarity with <em>clojure</em>, <em>babashka</em>, <em>git</em>, <em>github</em>, <em>cloudflare</em> and <em>markdown</em> syntax. </p></blockquote><p><strong>Prerequisites</strong>: Install babashka and git</p><p>As mentioned in my previous <a href='/new-year-2024'>blog</a>, I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.</p><p>Recently I found the amazing <a href='https://github.com/borkdude/quickblog'>quickblog</a>, that helped me get up and running with my first post within two hours.</p><p>Without wasting any more word, let's get started.</p><h2 id="outline">Outline</h2><p>In this post, we will</p><ul><li>Set up a blog repository using quickblog</li><li>Host it on github</li><li>Write a github action config to generate static files on push to <code>main</code> branch</li><li>Set up a CD pipeline on cloudflare to deploy the blog</li><li>Point a custom domain to the blog site</li></ul><h2 id="what&#95;is&#95;quickblog?">What is quickblog?</h2><p>Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.</p><h2 id="setting&#95;up&#95;quickblog">Setting up quickblog</h2><p>Create a directory that'll hold your blogging engine and blog posts. I will call it <code>blog</code>. Inside <code>blog</code> directory, create a <code>bb.edn</code> file. The structure looks like the following:</p><pre><code class="lang-sh">➜ tree blog 
+blog
+└── bb.edn
+
+1 directory, 1 file
+</code></pre><p>Let's add <em>quickblog</em> as a dependency in our <code>deps.edn</code>.</p><pre><code class="lang-edn">;; deps.edn
+{:deps {io.github.borkdude/quickblog {:git/tag &quot;v0.3.6&quot;
+                                      :git/sha &quot;d00e14b1176416b7d7b88e6608b6975888208355&quot;}}}}
+</code></pre><p>Replace the <code>:git/tag</code> and <code>:git/sha</code> with the latest ones in <a href='https://github.com/borkdude/quickblog'>quickblog repository</a>.</p><p>Now we will add a babashka task that hooks into <code>quickblog</code> api and exposes it as a command line tool.</p><pre><code class="lang-edn">{:deps {...} ;; folded deps map
+
+ :tasks
+ {:requires &#40;&#91;quickblog.cli :as cli&#93;&#41;
+  :init &#40;def opts {:blog-title &quot;&lt;Your Blog Title&gt;&quot;
+                   :blog-description &quot;&lt;Short Blog Description&gt;&quot;
+                   :about-link &quot;&lt;Your Website Link&gt;&quot;
+                   :twitter-handle &quot;&lt;Twitter Handle&gt;&quot;}&#41;
+  quickblog {:doc &quot;Start blogging quickly! Run `bb quickblog help` for details.&quot;
+             :task &#40;cli/dispatch opts&#41;}}}
+</code></pre><p>Replace all the options, with your own.</p><p>Execute <code>bb quickblog help</code>, it should print a detailed help text about using quickblog.</p><h2 id="first&#95;blog&#95;post">First blog post</h2><p>Now that we have quickblog setup, we will generate our first post. Quickblog command line has a <code>new</code> subcommand that allows us to do just that.</p><pre><code class="lang-sh">bb quickblog new --file my-first-blog-post.md --title &quot;My first blog post&quot;
+</code></pre><p>The directory structure after the last command should look like the following<pre><code class="lang-sh">➜  blog tree .
+.
+├── bb.edn
+└── posts
+    └── my-first-blog-post.md
+
+2 directories, 2 files
+</code></pre></p><p>Run a live reloading server using <code>bb quickblog watch</code>, it spins up a http server on <code>localhost:1888</code> by default.</p><p>Write your blog post, initialize the <code>blog</code> directory as a git repository and commit your markdown changes. You would also want to add a <code>.gitignore</code> file that excludes some directories from committing like <code>.work</code>, <code>.lsp</code> and <code>.clj-kondo</code>. We will also exclude the <code>public</code> directory from the commit to keep the main branch clean.</p><h2 id="setting&#95;up&#95;github&#95;action">Setting up github action</h2><p>Via github action, we will</p><ul><li>Switch to <code>deploy</code> branch</li><li>Generate the static files</li><li>Commit and push them to the repository</li></ul><p>For this, we will need to allow github actions <code>write</code> permissions on the repository.</p><p>In your repository, go to the <strong>Settings > Actions > General</strong>. In the <code>Workflow permissions</code> select <strong>Read and write permissions</strong> for now. Later, you can spericy more granular permissions <a href='https://docs.github.com/actions/reference/authentication-in-a-workflow#modifying-the-permissions-for-the-github_token'>documented here</a>.</p><p>Create the github action config file: <code>.github/workflows/deploy.yml</code>.<pre><code class="lang-yml">on:
+  push:
+    branches:
+      - main
+env:
+  TZ: Asia/Kolkata # Replace this with your time zone
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: git config
+        run: |
+          git config --global user.email &quot;&lt;Github Email&gt;&quot;
+          git config --global user.name &quot;&lt;Github Username&gt;&quot;
+      - name: Switch to deploy branch
+        uses: actions/checkout@v4
+        with:
+          ref: deploy
+          fetch-depth: 0
+      - name: Merge main into deploy
+        run: git merge origin/main
+      - name: Setup babashka
+        uses: just-sultanov/setup-babashka@v2
+        with:
+          version: 1.3.186 # Update this babashka version to latest
+      - name: clean
+        run: bb quickblog clean
+      - name: build
+        run: bb quickblog render
+      - name: git
+        run: |
+          export CURRENT&#95;TIME=$&#40;date&#41;
+          git add public
+          git commit -m &quot;deploy @ ${CURRENT&#95;TIME}&quot;
+          git push origin -u deploy
+</code></pre></p><p>Replace the placeholders for github email and username, and other parameters. Apart from that the file should be self explanatory.</p><p>We will keep it in our local for now, and push it later to github.</p><h2 id="setting&#95;up&#95;cloudflare">Setting up cloudflare</h2><p>Create a new cloudflare account if you don't have it already. Log in to the account and go to <strong>Workers & Pages</strong> in the left panel.</p><ul><li>We will <em>create an application</em></li><li>Go to <strong>Pages</strong> tab.</li><li>And <strong>Connect to Git</strong></li></ul><p>A modal pops up, where you select your Github account and the repository to connect. You'll be redirected to github. Allow access to just the <code>blog</code> repository and continue.</p><p>Now we go to the next step, add the project name and set the <code>Production branch</code> to <strong>deploy</strong> and <code>Build output directory</code> to <strong>public</strong>. <em>Click and deploy</em>.</p><p>Cloudflare will consider changes on all the branches other than the <code>Production branch</code>, that we set in the previous step, as preview branches. This means that changes on these other branches will also trigger a build, consuming our precious build quota.</p><p>To disable the preview branches, we will go to the project we just setup <strong>-> Settings tab -> Build & deployment -> Configure preview deployments -> None -> Save</strong>. We are done with the setting up our cloudflare page. It should be visible at <code>&lt;project-identifier&gt;.pages.dev</code>.</p><blockquote><p> <strong>Note</strong>: Create the main and deploy branches and push them to our github repository. This will trigger github action build, after which cloudflare page build and you should see you first blog up on the url mentioned above. </p></blockquote><h2 id="setting&#95;up&#95;custom&#95;domain">Setting up custom domain</h2><p>Here I am assuming that you already have a domain bought and configured on cloudflare. If you don't, then there are a couple of platforms that I use to find and get best offer for domains:</p><ul><li><a href='https://www.namecheap.com/'>Namecheap</a></li><li><a href='https://www.godaddy.com/'>GoDaddy</a></li><li><a href='https://www.bigrock.in'>BigRock</a></li><li><a href='https://www.hostinger.in/domain-name-search'>Hostinger</a></li></ul><p>Once you get a domain, transfer it to cloudflare by following <a href='https://developers.cloudflare.com/registrar/get-started/transfer-domain-to-cloudflare/'>these steps</a>.</p><p>Setting up a custom domain for your page is simple. Open our page project, and go to <strong>Custom domains</strong> tab. Click on <strong>Set up a custom domain</strong> and follow the steps.</p><blockquote><p> <strong>PS</strong>: There are multiple ways to host your blog, and probably most of them would be simpler than this setup. It was my first time setting up my blog, and can certainly be improved. Will post an update when I migrate to a better pipeline. A similar post: <a href='https://www.eknert.com/blog/quickblog'>Quickblog by Anders Means Different</a> </p></blockquote><blockquote><p> If you find an error or have a question, open an <a href='https://github.com/Samy-33/blog/issues/new'>issue</a>. </p></blockquote>]]></content>
+  </entry>
 </feed>
