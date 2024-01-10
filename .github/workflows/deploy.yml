@@ -1,0 +1,39 @@
+on:
+  push:
+    branches:
+      - main
+env:
+  TZ: Asia/Kolkata
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: git config
+        run: |
+          git config --global user.email "saket.is.sam@gmail.com"
+          git config --global user.name "Samy-33"
+      - name: Switch to deploy branch
+        uses: actions/checkout@v4
+        with:
+          ref: deploy
+          fetch-depth: 0
+      - name: Merge main into deploy
+        run: git merge origin/main
+      - name: Setup babashka
+        # You may pin to the exact commit or the version.
+        # uses: just-sultanov/setup-babashka@4aac6224e2b70964bc51b85f0f31bd1505a3f36d
+        uses: just-sultanov/setup-babashka@v2
+        with:
+        # A desired version of babashka to install
+          version: 1.3.186
+      - name: clean
+        run: bb quickblog clean
+      - name: build
+        run: bb quickblog render
+      - name: git
+        run: |
+          export CURRENT_TIME=$(date)
+          git add *
+          git commit -m "deploy @ ${CURRENT_TIME}"
+          git push origin -u deploy
