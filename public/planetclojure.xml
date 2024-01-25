@@ -3,11 +3,46 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-01-10T16:52:49+00:00</updated>
+  <updated>2024-01-25T18:44:44+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/neovim-clojure-pde-1.html</id>
+    <link href="https://github.com/borkdude/quickblog/neovim-clojure-pde-1.html"/>
+    <title>Neovim as the Clojure PDE - I</title>
+    <updated>2024-01-26T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<p>Hello, fellow text editor enthusiasts. Welcome to <em>Abstract Symphony</em>, meaning of which, nobody knows and has nothing to do with the post's agenda.</p><p>You may gently ask for the meaning of PDE, what the fuck does that mean?</p><p>Well, you don't have to be so rude. It's an abbreviation for <em>Personalized Development Environment</em>, coined by <a href='https://twitter.com/teej_dv'>TJ</a>, Neovim's marketing head.</p><h3 id="why&#95;neovim?">Why Neovim?</h3><p>You know, same old bullshit like speed, muscle memory, extension of your body/mind, spiritualism, nirvana, moksha and so on. Nothing serious. Jokes aside, the real reason was seeing how fast <a href='https://twitter.com/ThePrimeagen'>Prime</a> was, in <a href='https://youtu.be/SGBuBSXdtLY?si=0HJtUqZEIT3B3izX&t=69'>giving up</a> on clojure.</p><h3 id="why&#95;clojure?">Why Clojure?</h3><p>Because I love my high functioning parens. I can lisp down, 100s of reasons why, but that's beyond the scope. This emotion is hosted on a solid and reliable foundation. I am sure, a dynamic and immutable relationship is what keeps us tied together so strongly. Please forgive me, for my love for punning (nil?). <a href='https://clojure.org/about/rationale'>IYKYK</a>.</p><h3 id="init.lua">init.lua</h3><p>Neovim is a professional's tool. You need to deserve it, earn its respect, you know? Like Thor and his hammer.</p><p>Or you can just <a href='https://github.com/neovim/neovim/blob/master/INSTALL.md'>install</a> neovim and get started. At first sight, it doesn't look like anything more than a trap that you can never get out of (trust me you can :q!). And no, that was not my failed attempt at putting an emojee.</p><p>Create an <code>init.lua</code> file in <code>$HOME/.config/nvim</code> directory. This will be the entrypoint for your neovim configuration. It's similar to the <code>main</code> method in a java/c/cpp projects, an entry-point for the program to run.</p><p>Go ahead and add a <code>print&#40;&quot;Hello, world!&quot;&#41;</code> to the file. Now, when you run <code>nvim</code>, you should see <code>Hello, world!</code> at the bottom-left of your screen. Congratulations, for your first configured neovim instance.</p><h3 id="leader&#95;and&#95;localleader">Leader and LocalLeader</h3><p>Just like how each country needs good leaders to function properly, neovim is no different. You should define a leader and localleader according to your convenience. People usually choose <code>&lt;Space&gt;</code> or <code>&quot;,&quot;</code> as their leader. I'll go ahead with <code>&quot;,&quot;</code> as that is what I am used to.</p><p>But wait, what is the purpose of the leaders, you ask? Well, the main reason is the <code>&quot;plugins&quot;</code>. Plugin writers are not aware of how you have configured your editor. They can't arbitrarily setup keybindings in their plugins, as they may conflict with your bindings.</p><p>Neovim API exposes options via <code>vim.g</code>, <code>vim.o</code>, <code>vim.opt</code>, <code>vim.bo</code> and <code>vim.wo</code>. We can control behaviour of Neovim by setting these options. <code>vim.g</code> is used for <code>global</code> scoped options. We can read more about them in Neovim's help text using <code>:help vim.g</code> or <code>:help vim.o</code> etc.</p><p>Let's set our globally scoped leader and localleader.</p><pre><code class="lang-lua">-- init.lua
+vim.g.mapleader = ','
+vim.g.maplocalleader = ','
+</code></pre><p><strong>NSFW</strong>: <a href='https://learnvimscriptthehardway.stevelosh.com/chapters/06.html'>This article</a> goes deeper into how leader/localleader is helpful.</p><h3 id="we'll&#95;use&#95;fennel&#95;as&#95;our&#95;config&#95;language">We'll use Fennel as our config language</h3><p>Although, Neovim officially supports lua as its configuration language, we will use <a href='https://fennel-lang.org/'>Fennel</a>. Because, we love our parens. And also, we like to struggle and learn.</p><p>Fennel transpiles into lua, so we need a Neovim plugin to transpile our fennel files into lua. Olical's <a href='https://github.com/Olical/nfnl'>nfnl</a> does exactly that. We will update our <code>init.lua</code> to download <code>nfnl</code>. We will also add nfnl's path to neovim's runtime path, so that it can find <code>nfnl</code> plugin.</p><pre><code class="lang-lua">-- init.lua
+-- ...
+
+local nfnl&#95;path = vim.fn.stdpath 'data' .. '/lazy/nfnl'
+
+if not vim.uv.fs&#95;stat&#40;nfnl&#95;path&#41; then
+  print&#40;&quot;Could not find nfnl, cloning new copy to&quot;, nfnl&#95;path&#41;
+  vim.fn.system&#40;{'git', 'clone', 'https://github.com/Olical/nfnl', nfnl&#95;path}&#41;
+end
+
+vim.opt.rtp:prepend&#40;nfnl&#95;path&#41;
+
+require&#40;'nfnl'&#41;.setup&#40;&#41;
+</code></pre><p>We define a local variable <code>nfnl&#95;path</code>. It holds the directory path where we will download <code>nfnl</code>.</p><ul><li><strong>vim.fn.stdpath 'data'</strong> returns neovim's <code>data</code> directory.<blockquote><p> <code>:help stdpath</code> to know more about standard paths. </li><li>"<strong>..</strong>" is lua's string concatenation operator. So essentially, we get neovim's standard data path and append <code>/lazy/nfnl</code> to it. We'll store <code>nfnl</code> here.</li><li><strong>vim.uv.fs&#95;stat(nfnl_path)</strong> returns information about file/directory. If the file doesn't exist, it returns nil.</li><li><strong>vim.fn.system</strong> allows us to execute shell commands. We can also use <code>vim.system&#40;...&#41;</code> instead. They are exactly the same.</li><li>We ran <code>git clone</code> to download nfnl from its official github repository.</li><li>Then we added <code>nfnl&#95;path</code> to the neovim's runtime path.</li><li>At last, we require the <code>nfnl</code> module and call <code>setup</code> on it.</li></ul></p></blockquote><p>Let us create a directory to store our fennel config files. And also a <code>core.fnl</code> file inside that directory.</p><pre><code class="lang-sh"># Creates the directory
+mkdir -p $HOME/.config/nvim/fnl/user
+
+# Creates the file
+touch $HOME/.config/nvim/fnl/user/core.fnl
+</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-fnl">;; core.fnl
+&#40;println &quot;Hello, world! This is fennel config!&quot;&#41;
+</code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-sh">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
+</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>Let's open <code>core.fnl</code> and just save it by <code>:write</code>. You'll notice a prompt asking you to allow nfnl to transpile the files. Go ahead and allow it. When you look at the <code>$HOME/.config.nvim</code> directory, you should have a <code>lua</code> directory with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
+-- ...
+-- append this to the bottom of init.lua file.
+require&#40;'user.core'&#41;
+</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote><h4 id="to&#95;be&#95;continued!">To be continued!</h4></p>]]></content>
+  </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/quickblog-setup.html</id>
     <link href="https://github.com/borkdude/quickblog/quickblog-setup.html"/>
