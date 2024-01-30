@@ -73,7 +73,7 @@ We define a local variable `nfnl_path`. It holds the directory path where we wil
 
 Let us create a directory to store our fennel config files. And also a `core.fnl` file inside that directory.
 
-```sh
+```bash
 # Creates the directory
 mkdir -p $HOME/.config/nvim/fnl/user
 
@@ -82,7 +82,7 @@ touch $HOME/.config/nvim/fnl/user/core.fnl
 ```
 
 Let's add a simple `Hello, world!` print form in our `core.fnl`.
-```fnl
+```clojure
 ;; core.fnl
 (println "Hello, world! This is fennel config!")
 ```
@@ -90,7 +90,7 @@ Let's add a simple `Hello, world!` print form in our `core.fnl`.
 When we restart our neovim instance, nothing happens. We should have seen a _hello world_ message. We're missing a key `nfnl` config.
 
 `nfnl` looks for a `.nfnl.fnl` file in a directory for configuration about which files to compile and how. Create a `.nfnl.fnl` file with empty config in `$HOME/.config/nvim` directory.
-```sh
+```bash
 echo {} > $HOME/.config/nvim/.nfnl.fnl
 ```
 

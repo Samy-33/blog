@@ -28,7 +28,7 @@ Quickblog is a light-weight static blog engine for clojure and babashka. It allo
 ## Setting up quickblog
 Create a directory that'll hold your blogging engine and blog posts. I will call it `blog`. Inside `blog` directory, create a `bb.edn` file. The structure looks like the following:
 
-```sh
+```bash
 ➜ tree blog 
 blog
 └── bb.edn
@@ -38,7 +38,7 @@ blog
 
 Let's add *quickblog* as a dependency in our `deps.edn`.
 
-```edn
+```clojure
 ;; deps.edn
 {:deps {io.github.borkdude/quickblog {:git/tag "v0.3.6"
                                       :git/sha "d00e14b1176416b7d7b88e6608b6975888208355"}}}}
@@ -47,7 +47,7 @@ Replace the `:git/tag` and `:git/sha` with the latest ones in [quickblog reposit
 
 Now we will add a babashka task that hooks into `quickblog` api and exposes it as a command line tool.
 
-```edn
+```clojure
 {:deps {...} ;; folded deps map
 
  :tasks
@@ -66,12 +66,12 @@ Execute `bb quickblog help`, it should print a detailed help text about using qu
 ## First blog post
 Now that we have quickblog setup, we will generate our first post. Quickblog command line has a `new` subcommand that allows us to do just that.
 
-```sh
+```bash
 bb quickblog new --file my-first-blog-post.md --title "My first blog post"
 ```
 
 The directory structure after the last command should look like the following
-```sh
+```bash
 ➜  blog tree .
 .
 ├── bb.edn
