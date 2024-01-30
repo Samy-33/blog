@@ -8,8 +8,11 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-clojure.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-lua.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-bash.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-yaml.min.js"></script>
     
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/themes/prism-tomorrow.min.css">
 
     <!-- See Features > favicon in README.md -->
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png">
@@ -93,14 +96,14 @@ end
 vim.opt.rtp:prepend&#40;nfnl&#95;path&#41;
 
 require&#40;'nfnl'&#41;.setup&#40;&#41;
-</code></pre><p>We define a local variable <code>nfnl&#95;path</code>. It holds the directory path where we will download <code>nfnl</code>.</p><ul><li><strong>vim.fn.stdpath 'data'</strong> returns neovim's <code>data</code> directory.<blockquote><p> <code>:help stdpath</code> to know more about standard paths. </li><li>"<strong>..</strong>" is lua's string concatenation operator. So essentially, we get neovim's standard data path and append <code>/lazy/nfnl</code> to it. We'll store <code>nfnl</code> here.</li><li><strong>vim.uv.fs&#95;stat(nfnl_path)</strong> returns information about file/directory. If the file doesn't exist, it returns nil.</li><li><strong>vim.fn.system</strong> allows us to execute shell commands. We can also use <code>vim.system&#40;...&#41;</code> instead. They are exactly the same.</li><li>We ran <code>git clone</code> to download nfnl from its official github repository.</li><li>Then we added <code>nfnl&#95;path</code> to the neovim's runtime path.</li><li>At last, we require the <code>nfnl</code> module and call <code>setup</code> on it.</li></ul></p></blockquote><p>Let us create a directory to store our fennel config files. And also a <code>core.fnl</code> file inside that directory.</p><pre><code class="lang-sh"># Creates the directory
+</code></pre><p>We define a local variable <code>nfnl&#95;path</code>. It holds the directory path where we will download <code>nfnl</code>.</p><ul><li><strong>vim.fn.stdpath 'data'</strong> returns neovim's <code>data</code> directory.<blockquote><p> <code>:help stdpath</code> to know more about standard paths. </li><li>"<strong>..</strong>" is lua's string concatenation operator. So essentially, we get neovim's standard data path and append <code>/lazy/nfnl</code> to it. We'll store <code>nfnl</code> here.</li><li><strong>vim.uv.fs&#95;stat(nfnl_path)</strong> returns information about file/directory. If the file doesn't exist, it returns nil.</li><li><strong>vim.fn.system</strong> allows us to execute shell commands. We can also use <code>vim.system&#40;...&#41;</code> instead. They are exactly the same.</li><li>We ran <code>git clone</code> to download nfnl from its official github repository.</li><li>Then we added <code>nfnl&#95;path</code> to the neovim's runtime path.</li><li>At last, we require the <code>nfnl</code> module and call <code>setup</code> on it.</li></ul></p></blockquote><p>Let us create a directory to store our fennel config files. And also a <code>core.fnl</code> file inside that directory.</p><pre><code class="lang-bash"># Creates the directory
 mkdir -p $HOME/.config/nvim/fnl/user
 
 # Creates the file
 touch $HOME/.config/nvim/fnl/user/core.fnl
-</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-fnl">;; core.fnl
+</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; core.fnl
 &#40;println &quot;Hello, world! This is fennel config!&quot;&#41;
-</code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-sh">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
+</code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-bash">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
 </code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>Let's open <code>core.fnl</code> and just save it by <code>:write</code>. You'll notice a prompt asking you to allow nfnl to transpile the files. Go ahead and allow it. When you look at the <code>$HOME/.config.nvim</code> directory, you should have a <code>lua</code> directory with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
 -- ...
 -- append this to the bottom of init.lua file.
