@@ -8,7 +8,7 @@ Description: Hosting your personal blog
 
 **Prerequisites**: Install babashka and git
 
-As mentioned in my previous [blog](/new-year-2024), I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.
+As mentioned in my previous [post](/new-year-2024), I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.
 
 Recently I found the amazing [quickblog](https://github.com/borkdude/quickblog), that helped me get up and running with my first post within two hours.
 

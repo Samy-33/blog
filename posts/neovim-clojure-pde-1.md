@@ -83,7 +83,7 @@ touch $HOME/.config/nvim/fnl/user/core.fnl
 
 Let's add a simple `Hello, world!` print form in our `core.fnl`.
 ```clojure
-;; core.fnl
+;; fnl/user/core.fnl
 (println "Hello, world! This is fennel config!")
 ```
 
@@ -98,7 +98,8 @@ When we restart our instance again, we still don't see anything printed. Well, t
 * Fennel files haven't been transpiled yet. `nfnl` transpiles `fnl` files on save by default.
 * In our `init.lua`, we haven't `require`d the `user.core`, so nvim doesn't know about it just yet.
 
-Let's open `core.fnl` and just save it by `:write`. You'll notice a prompt asking you to allow nfnl to transpile the files. Go ahead and allow it. When you look at the `$HOME/.config.nvim` directory, you should have a `lua` directory with transpiled lua code corresponding to the `core.fnl`.
+On opening `core.fnl`, a prompt says that `.nfnl.fnl` is not trusted. Press `a` to allow (mark it as trusted). This is because `nfnl` by default won't compile files in a directory unless we specifically allow it to.
+Once we allow and save the `core.fnl` file, by using `:write` command, a new file `lua/user/core.lua` gets generated with transpiled lua code corresponding to the `core.fnl`.
 
 Let's require `user/core` module in `init.lua`
 ```lua
@@ -111,4 +112,4 @@ require('user.core')
 Now, when you restart neovim, it greets you with:
 > Hello, world! This is fennel config!
 
-#### To be continued!
+Hop on to the [next part](/neovim-clojure-pde-2).
