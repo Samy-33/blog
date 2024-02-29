@@ -3,11 +3,368 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-01-30T07:41:06+00:00</updated>
+  <updated>2024-02-29T13:18:58+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html</id>
+    <link href="https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html"/>
+    <title>Neovim as the Clojure PDE - II</title>
+    <updated>2024-02-29T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<p><a href='/neovim-clojure-pde-1'>Click here</a> if you missed the first part.</p><p>Welcome back, folks. It's been a while since the first post of this series came out.</p><p>Today's agenda is to install some basic plugins and configure them. While doing that, we'll learn some fennel and have our own config in parallel.</p><h3 id="why&#95;plugins?">Why Plugins?</h3><p>Plugins enhance the raw editor by adding features that the raw Neovim doesn't provide out of the box. In VSCode world, we call them extensions.</p><p>We need a plugin that makes it easy for us to install and use other plugins. These are called <code>Plugin Managers</code>. There are many of them in Neovim/Vim world like <a href='https://github.com/wbthomason/packer.nvim'>Packer</a>, <a href='https://github.com/junegunn/vim-plug'>Vim Plug</a>, <a href='https://github.com/folke/lazy.nvim'>Lazy</a> et al. For the purpose of this post and because it's the new shiny thing, we will use <strong>Lazy</strong>.</p><h3 id="plugins.fnl">plugins.fnl</h3><p>Just to recap, after our <a href='/neovim-clojure-pde-1'>last post</a>, the config directory looks like the following<pre><code class="lang-sh">$ tree -L 3 &#126;/.config/nvim
+├── fnl
+│   └── user
+│       └── core.fnl
+├── init.lua
+└── lua
+    └── user
+        └── core.lua
+</code></pre></p><p>We are going to add the following plugins now:</p><ul><li><a href='https://github.com/neovim/nvim-lspconfig'>lsp-config</a> - Language Server Protocol client for neovim</li><li><a href='https://github.com/nvim-treesitter/nvim-treesitter'>nvim-treesitter</a> - Allows to parse code into abstract syntax tree and use that in better syntax highlighting, code traversal et al.</li><li><a href='https://github.com/hrsh7th/nvim-cmp'>nvim-cmp</a> - Autocompletion for neovim</li><li><a href='https://github.com/nvim-telescope/telescope.nvim'>telescope.nvim</a> - Fuzzy finder for neovim</li><li><a href='https://github.com/Olical/conjure'>conjure</a> - Allows you to hook into REPl servers</li><li><a href='https://github.com/Olical/conjure'>nvim-paredit</a> - S-expression motions made easy</li><li><a href='https://github.com/HiPhish/rainbow-delimiters.nvim'>rainbow-delimiters</a> - Colorful parenthesis</li><li><a href='https://github.com/windwp/nvim-autopairs'>autopairs</a> - Allows working with pair characters easy</li></ul><p>We'll put all the plugin installation related configuration in the <code>plugins.fnl</code> file. Let's start with installing <code>Lazy</code>, a lua based plugin manager for neovim.</p><pre><code class="lang-clojure">;; fnl/user/plugins.fnl
+
+;; Path to directory where lazy itself will be installed.
+;; `&#40;vim.fn.stdpath :data&#41;` returns standard directory where nvim's data will be stored.
+;; `..` is string concatenation in fnl.
+&#40;local lazy-path &#40;.. &#40;vim.fn.stdpath :data&#41;
+                     :/lazy/lazy.nvim&#41;&#41;
+
+;; `&#40;vim.uv.fs&#95;stat lazy-path&#41;` returns nil if the `lazy-path` doesn't exist.
+;; If the directory exists, it returns info about the directory.
+&#40;local lazy-installed? &#40;vim.uv.fs&#95;stat lazy-path&#41;&#41;
+
+;; We'll store plugins we need to install in this variable.
+&#40;local to-install &#91;&#93;&#41;
+
+;; `setup` installs lazy plugin manager if not already installed, and also downloads the plugins added to `to-install`.
+;; This is an exported function that is called from the parent module.
+&#40;fn setup &#91;&#93;
+  &#40;when &#40;not lazy-installed?&#41;
+    &#40;vim.fn.system &#91;:git
+                    :clone
+                    &quot;--filter=blob:none&quot;
+                    &quot;https://github.com/folke/lazy.nvim.git&quot;
+                    :--branch=stable
+                    lazy-path&#93;&#41;&#41;
+  &#40;vim.opt.rtp:prepend lazy-path&#41;
+  &#40;let &#91;lazy &#40;autoload :lazy&#41;&#93;
+    &#40;lazy.setup plugins-to-install&#41;&#41;&#41;
+
+;; Exporting the setup function.
+{: setup}
+</code></pre><p>Let's import <code>plugins.fnl</code> in <code>fnl/user/core.fnl</code> and call the <code>setup</code> function.</p><pre><code class="lang-clojure">;; fnl/user/core.fnl
+&#40;local plugins &#40;require :user.plugins&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;plugins.setup&#41;&#41;
+
+{: setup}
+</code></pre><p>In our <code>init.lua</code>, we need to call <code>setup</code> function of our <code>core</code> module.</p><pre><code class="lang-lua">-- init.lua
+-- ...
+
+require&#40;'user.core'&#41;.setup&#40;&#41;
+</code></pre><p>Now, when we restart the neovim, the lazy plugin should be installed.</p><p>It is time for us to add the plugins we listed above.</p><pre><code class="lang-clojure">;; fnl/user/plugins.fnl
+
+;; ...
+&#40;local to-install
+  &#91;{1 :neovim/nvim-lspconfig
+    :dependencies &#91;{1 :williamboman/mason.nvim :config true} ;; Mason handles lsp servers for us and others
+                   :williamboman/mason-lspconfig.nvim ;; default lspconfigs for language servers
+                   {1 :echasnovski/mini.nvim ;; For lsp progress notification
+                    :version false
+                    :config &#40;fn &#91;&#93; 
+                              &#40;let &#91;mnotify &#40;require :mini.notify&#41;&#93;
+                                &#40;mnotify.setup {:lsp&#95;progress {:enable true
+                                                               :duration&#95;last 2000}}&#41;&#41;&#41;}
+                   :folke/neodev.nvim&#93;} ;; neodev for lua neovim dev support.
+
+   ;; Autocompletion   
+   {1 :hrsh7th/nvim-cmp
+    :dependencies &#91;:hrsh7th/cmp-nvim-lsp&#93;}
+
+   ;; Fuzzy Finder &#40;files, lsp, etc&#41;
+   {1 :nvim-telescope/telescope.nvim
+    :version &quot;&#42;&quot;
+    :dependencies {1 :nvim-lua/plenary.nvim}}
+   ;; Fuzzy Finder Algorithm which requires local dependencies to be built.
+   ;; Only load if `make` is available. Make sure you have the system
+   ;; requirements installed.
+   {1 :nvim-telescope/telescope-fzf-native.nvim
+    ;; NOTE: If you are having trouble with this installation,
+    ;; refer to the README for telescope-fzf-native for more instructions.
+    :build :make
+    :cond &#40;fn &#91;&#93; &#40;= &#40;vim.fn.executable :make&#41; 1&#41;&#41;}
+
+   ;; Treesitter
+   {1 :nvim-treesitter/nvim-treesitter
+    :build &quot;:TSUpdate&quot;}
+  
+   ;; Conjure and related plugins
+   :Olical/conjure
+   :PaterJason/cmp-conjure ;; autocomplete using conjure
+   :tpope/vim-dispatch
+   :clojure-vim/vim-jack-in
+   :radenling/vim-dispatch-neovim
+   :tpope/vim-surround
+
+   ;; Paredit
+   {1 :julienvincent/nvim-paredit
+    :config &#40;fn &#91;&#93;
+              &#40;let &#91;paredit &#40;require :nvim-paredit&#41;&#93;
+                &#40;paredit.setup {:indent {:enabled true}}&#41;&#41;&#41;}
+   ;; Paredit plugin for fennel
+   {1 :julienvincent/nvim-paredit-fennel
+    :dependencies &#91;:julienvincent/nvim-paredit&#93;
+    :ft &#91;:fennel&#93;
+    :config &#40;fn &#91;&#93;
+              &#40;let &#91;fnl-paredit &#40;require :nvim-paredit-fennel&#41;&#93;
+                &#40;fnl-paredit.setup&#41;&#41;&#41;}
+
+   ;; Rainbow parens
+   :HiPhish/rainbow-delimiters.nvim
+
+   ;; Autopairs
+   {1 :windwp/nvim-autopairs
+    :event :InsertEnter
+    :opts {:enable&#95;check&#95;bracket&#95;line false}}&#93;&#41;
+</code></pre><p>Restart neovim, and we see Lazy UI installing the plugins added above.</p><h3 id="common&#95;configuration">Common configuration</h3><p>Let's configure Neovim to solve some day-to-day pains eg. enabling relative line numbering, auto syncing system and neovim clipboards, some useful keymaps etc.</p><p>We'll create a <code>general.fnl</code> where we put all of this.<pre><code class="lang-clojure">;; fnl/user/config/general.fnl
+
+&#40;fn setup &#91;&#93;
+  ;; disables highlighting all the search results in the doc
+  &#40;set vim.o.hlsearch false&#41;
+
+  ;; line numbering
+  &#40;set vim.wo.number true&#41;
+  &#40;set vim.wo.relativenumber true&#41;
+
+  ;; disable mouse
+  &#40;set vim.o.mouse &quot;&quot;&#41;
+
+  ;; clipboard is system clipboard
+  &#40;set vim.o.clipboard :unnamedplus&#41;
+
+  ;; Some other useful opts. `:help &lt;keyword&gt;` for the help.
+  ;; For example: `:help breakindent` will open up vimdocs about `vim.o.breakindent` option.
+  &#40;set vim.o.breakindent true&#41;
+  &#40;set vim.o.undofile true&#41;
+  &#40;set vim.o.ignorecase true&#41;
+  &#40;set vim.o.smartcase true&#41;
+  &#40;set vim.wo.signcolumn :yes&#41;
+  &#40;set vim.o.updatetime 250&#41;
+  &#40;set vim.o.timeout true&#41;
+  &#40;set vim.o.timeoutlen 300&#41;
+  &#40;set vim.o.completeopt &quot;menuone,noselect&quot;&#41;
+  &#40;set vim.o.termguicolors true&#41;
+  &#40;set vim.o.cursorline true&#41;
+
+  ;; Keymaps
+  &#40;vim.keymap.set &#91;:n :v&#93; :&lt;Space&gt; :&lt;Nop&gt; {:silent true}&#41;
+
+  ;; To deal with word wrap
+  &#40;vim.keymap.set :n :k &quot;v:count == 0 ? 'gk' : 'k'&quot; {:expr true :silent true}&#41;
+  &#40;vim.keymap.set :n :j &quot;v:count == 0 ? 'gj' : 'j'&quot; {:expr true :silent true}&#41;
+
+  ;; Tabs &#40;Optional and unrelated to this tutorial, but helpful in handling tab movement&#41;
+  &#40;vim.keymap.set &#91;:n :v :i :x&#93; :&lt;C-h&gt; #&#40;vim.api.nvim&#95;command :tabprevious&#41;
+                  {:silent true}&#41;
+  &#40;vim.keymap.set &#91;:n :v :i :x&#93; :&lt;C-l&gt; #&#40;vim.api.nvim&#95;command :tabnext&#41;
+                  {:silent true}&#41;
+  &#40;vim.keymap.set &#91;:n :v :i :x&#93; :&lt;C-n&gt; #&#40;vim.api.nvim&#95;command :tabnew&#41;
+                  {:silent true}&#41;&#41;
+
+;; exports an empty map
+{: setup}
+</code></pre></p><h3 id="plugin&#95;configurations">Plugin Configurations</h3><p>It is time for us to configure each of these plugins to cater to our needs. These needs are plugin specific. We may want to add keymaps for commands we use often or tell Mason to make sure that particular LSP is always installed, or anything else that the plugin supports. These settings and configs can often be found on the plugin's github repository and neovim's documentation.</p><h4 id="lsp&#95;configuration">LSP configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/lsp.fnl
+
+&#40;local nfnl-c           &#40;require :nfnl.core&#41;&#41;
+&#40;local ts-builtin       &#40;require :telescope.builtin&#41;&#41;
+&#40;local cmp-nvim-lsp     &#40;require :cmp&#95;nvim&#95;lsp&#41;&#41;
+&#40;local mason-lspconfig  &#40;require :mason-lspconfig&#41;&#41;
+&#40;local lspconfig        &#40;require :lspconfig&#41;&#41;
+&#40;local neodev           &#40;require :neodev&#41;&#41;
+
+;; This function will be executed when neovim attaches to an LSP server.
+;; This basically sets up some widely used keymaps to interact with LSP servers.
+&#40;fn on-attach &#91;&#95; bufnr&#93;
+  &#40;let &#91;nmap &#40;fn &#91;keys func desc&#93;
+               &#40;vim.keymap.set :n keys func
+                               {:buffer bufnr 
+                                :desc   &#40;.. &quot;LSP: &quot; desc&#41;}&#41;&#41;
+        nvxmap &#40;fn &#91;keys func desc&#93;
+                 &#40;vim.keymap.set &#91;:n :v :x&#93; keys func
+                                 {:buffer bufnr :desc &#40;.. &quot;LSP: &quot; desc&#41;}&#41;&#41;&#93;
+    &#40;nmap :&lt;leader&gt;rn vim.lsp.buf.rename &quot;&#91;R&#93;e&#91;n&#93;ame&quot;&#41;
+    &#40;nmap :&lt;leader&gt;ca vim.lsp.buf.code&#95;action &quot;&#91;C&#93;ode &#91;A&#93;ction&quot;&#41;
+    &#40;nmap :gd vim.lsp.buf.definition &quot;&#91;G&#93;oto &#91;D&#93;efinition&quot;&#41;
+    &#40;nmap :gr &#40;fn &#91;&#93; &#40;ts-builtin.lsp&#95;references {:fname&#95;width 60}&#41;&#41;
+          &quot;&#91;G&#93;oto &#91;R&#93;eferences&quot;&#41;
+    &#40;nmap :gI vim.lsp.buf.implementation &quot;&#91;G&#93;oto &#91;I&#93;mplementation&quot;&#41;
+    &#40;nmap :&lt;leader&gt;D vim.lsp.buf.type&#95;definition &quot;Type &#91;D&#93;efinition&quot;&#41;
+    &#40;nmap :&lt;leader&gt;ds ts-builtin.lsp&#95;document&#95;symbols &quot;&#91;D&#93;ocument &#91;S&#93;ymbols&quot;&#41;
+    &#40;nmap :&lt;leader&gt;ws
+          &#40;fn &#91;&#93; &#40;ts-builtin.lsp&#95;dynamic&#95;workspace&#95;symbols {:fname&#95;width 60}&#41;&#41;
+          &quot;&#91;W&#93;orkspace &#91;S&#93;ymbols&quot;&#41;
+    &#40;nmap :K vim.lsp.buf.hover &quot;Hover Documentation&quot;&#41;
+    &#40;nmap :&lt;C-k&gt; vim.lsp.buf.signature&#95;help &quot;Signature Documentation&quot;&#41;
+    &#40;nmap :gD vim.lsp.buf.declaration &quot;&#91;G&#93;oto &#91;D&#93;eclaration&quot;&#41;
+    &#40;nmap :&lt;leader&gt;wa vim.lsp.buf.add&#95;workspace&#95;folder
+          &quot;&#91;W&#93;orkspace &#91;A&#93;dd folder&quot;&#41;
+    &#40;nmap :&lt;leader&gt;wr vim.lsp.buf.remove&#95;workspace&#95;folder
+          &quot;&#91;W&#93;orkspace &#91;R&#93;emove folder&quot;&#41;
+    &#40;nmap :&lt;leader&gt;wl
+          &#40;fn &#91;&#93;
+            &#40;nfnl-c.println &#40;vim.inspect &#40;vim.lsp.buf.list&#95;workspace&#95;folders&#41;&#41;&#41;&#41;
+          &quot;&#91;W&#93;orkspace &#91;L&#93;ist folders&quot;&#41;
+    &#40;nvxmap :&lt;leader&gt;fmt vim.lsp.buf.format
+            &quot;&#91;F&#93;or&#91;m&#93;a&#91;t&#93; the current buffer or range&quot;&#41;&#41;&#41;
+
+;; This binding keeps a map from lsp server name and its settings.
+&#40;local servers
+       {:clojure&#95;lsp            {:paths-ignore-regex :conjure-log-&#42;.cljc}
+        :lua&#95;ls                 {:Lua {:workspace {:checkThirdParty false}
+                                       :telemetry {:enable false}}}
+        :fennel&#95;language&#95;server {:fennel {:diagnostics  {:globals &#91;:vim&#93;}
+                                          :workspace    {:library &#40;vim.api.nvim&#95;list&#95;runtime&#95;paths&#41;}}}}&#41;
+
+&#40;local capabilities
+       &#40;cmp-nvim-lsp.default&#95;capabilities &#40;vim.lsp.protocol.make&#95;client&#95;capabilities&#41;&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;neodev.setup&#41;
+  &#40;mason-lspconfig.setup {:ensure&#95;installed &#40;nfnl-c.keys servers&#41;}&#41;
+  &#40;mason-lspconfig.setup&#95;handlers &#91;&#40;fn &#91;server-name&#93;
+                                     &#40;&#40;. &#40;. lspconfig server-name&#41; :setup&#41; 
+                                        {: capabilities
+                                         :on&#95;attach on-attach
+                                         :settings &#40;. servers server-name&#41;
+
+                                         ;; This is required because clojure-lsp doesn't send LSP progress messages if the `workDoneToken` is not sent from client. It is an arbitrary string.
+                                         :before&#95;init
+                                         &#40;fn &#91;params &#95;&#93;
+                                           &#40;set params.workDoneToken 
+                                                &quot;work-done-token&quot;&#41;&#41;}&#41;&#41;&#93;&#41;&#41;
+
+{: setup}
+</code></pre><h4 id="autocompletion&#95;configuration">Autocompletion configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/cmp.fnl
+&#40;local cmp &#40;require :cmp&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;cmp.setup {:mapping &#40;cmp.mapping.preset.insert 
+                         {:&lt;C-d&gt;     &#40;cmp.mapping.scroll&#95;docs -4&#41;
+                          :&lt;C-f&gt;     &#40;cmp.mapping.scroll&#95;docs 4&#41;
+                          :&lt;C-Space&gt; &#40;cmp.mapping.complete {}&#41;
+                          :&lt;CR&gt;      &#40;cmp.mapping.confirm {:behavior cmp.ConfirmBehavior.Replace
+                                                           :select false}&#41;
+                          :&lt;Tab&gt;     &#40;cmp.mapping &#40;fn &#91;fallback&#93;
+                                                    &#40;if
+                                                      &#40;cmp.visible&#41;
+                                                      &#40;cmp.select&#95;next&#95;item&#41;
+
+                                                      ;; else
+                                                      &#40;fallback&#41;&#41;&#41;&#41;
+                          :&lt;S-Tab&gt;   &#40;cmp.mapping &#40;fn &#91;fallback&#93;
+                                                    &#40;if 
+                                                      &#40;cmp.visible&#41;
+                                                      &#40;cmp.select&#95;prev&#95;item&#41;
+                                                      
+                                                      ;; else
+                                                      &#40;fallback&#41;&#41;&#41;&#41;}                        
+                         &#91;:i :s&#93;&#41;
+              :sources &#91;{:name :conjure}
+                        {:name :nvim&#95;lsp}&#93;}&#41;&#41;
+
+{: setup}
+</code></pre><h4 id="paredit&#95;configuration">Paredit configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/paredit.fnl
+
+&#40;local paredit      &#40;require :nvim-paredit&#41;&#41;
+&#40;local paredit-fnl  &#40;require :nvim-paredit-fennel&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;paredit.setup {:indent {:enabled true}}&#41;
+  &#40;paredit-fnl.setup&#41;&#41;
+
+{: setup}
+</code></pre><h4 id="rainbow&#95;delimiters&#95;configuration">Rainbow delimiters configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/rainbow.fnl
+
+&#40;local rainbow-delimiters &#40;require :rainbow-delimiters&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;set vim.g.rainbow&#95;delimiters
+       {:strategy {&quot;&quot; rainbow-delimiters.strategy.local}
+        :query    {&quot;&quot; :rainbow-delimiters}}&#41;&#41;
+
+{: setup}
+</code></pre><h4 id="telescope&#95;configuration">Telescope configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/telescope.fnl
+
+&#40;local telescope  &#40;require :telescope&#41;&#41;
+&#40;local builtin    &#40;require :telescope.builtin&#41;&#41;
+&#40;local themes     &#40;require :telescope.themes&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;telescope.setup {:defaults {:mappings {:i {:&lt;C-u&gt; false :&lt;C-d&gt; false}}}}&#41;
+  &#40;telescope.load&#95;extension :fzf&#41;
+
+  ;; keymaps
+  &#40;vim.keymap.set :n :&lt;leader&gt;? builtin.oldfiles
+                  {:desc &quot;&#91;?&#93; Find recently opened files&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fb builtin.buffers {:desc &quot;&#91;F&#93;ind open &#91;B&#93;uffers&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;/
+                  &#40;fn &#91;&#93;
+                    &#40;builtin.current&#95;buffer&#95;fuzzy&#95;find &#40;themes.get&#95;dropdown {:winblend 10
+                                                                             :previewer false}&#41;&#41;&#41;
+                  {:desc &quot;&#91;/&#93; Fuzzily search in current buffer&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;ff builtin.find&#95;files {:desc &quot;&#91;F&#93;ind &#91;F&#93;iles&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fh builtin.help&#95;tags {:desc &quot;&#91;F&#93;ind &#91;H&#93;elp&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fw builtin.grep&#95;string
+                  {:desc &quot;&#91;F&#93;ind current &#91;W&#93;ord&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fg builtin.live&#95;grep {:desc &quot;&#91;F&#93;ind by &#91;G&#93;rep&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fd builtin.diagnostics
+                  {:desc &quot;&#91;F&#93;ind &#91;D&#93;iagnostics&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fcf
+                  &#40;fn &#91;&#93; &#40;builtin.find&#95;files {:cwd &#40;vim.fn.stdpath :config&#41;}&#41;&#41;
+                  {:desc &quot;&#91;F&#93;ind &#91;C&#93;onfing &#91;F&#93;iles&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fch builtin.command&#95;history
+                  {:desc &quot;&#91;F&#93;ind in &#91;C&#93;ommands &#91;H&#93;istory&quot;}&#41;
+  &#40;vim.keymap.set :n :&lt;leader&gt;fm builtin.marks {:desc &quot;&#91;F&#93;ind in &#91;M&#93;arks&quot;}&#41;&#41;
+
+{: setup}
+</code></pre><h4 id="treesitter&#95;configuration">Treesitter configuration</h4><pre><code class="lang-clojure">;; fnl/user/config/treesitter.fnl
+
+&#40;local configs &#40;require :nvim-treesitter.configs&#41;&#41;
+
+&#40;local ensure-installed &#91;:clojure :lua :vimdoc :vim :fennel&#93;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;configs.setup {:ensure&#95;installed       ensure-installed
+                  ;; Add languages to be installed here that you want installed for treesitter
+                  :auto&#95;install           true
+                  :highlight              {:enable true}
+                  :indent                 {:enable  false}}&#41;&#41;
+
+{: setup}
+</code></pre><h3 id="gluing&#95;everything&#95;together">Gluing everything together</h3><p>Let's actually call <code>setup</code> methods of all these modules in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; fnl/user/core.fnl
+&#40;local plugins          &#40;require :user.plugins&#41;&#41;
+&#40;local u-general        &#40;require :user.config.general&#41;&#41;
+&#40;local u-telescope      &#40;require :user.config.telescope&#41;&#41;
+&#40;local u-treesitter     &#40;require :user.config.treesitter&#41;&#41;
+&#40;local u-lsp            &#40;require :user.config.lsp&#41;&#41;
+&#40;local u-cmp            &#40;require :user.config.cmp&#41;&#41;
+&#40;local u-paredit        &#40;require :user.config.paredit&#41;&#41;
+&#40;local u-rainbow        &#40;require :user.config.rainbow&#41;&#41;
+
+&#40;fn setup &#91;&#93;
+  &#40;plugins.setup&#41;
+  &#40;u-general.setup&#41;
+  &#40;u-telescope.setup&#41;
+  &#40;u-treesitter.setup&#41;
+  &#40;u-lsp.setup&#41;
+  &#40;u-cmp.setup&#41;
+  &#40;u-paredit.setup&#41;
+  &#40;u-rainbow.setup&#41;&#41;
+
+{: setup}
+</code></pre></p><p>And that should be it. I know, this blog is long and contains a lot of code. Most of it should be self explanatory once you get familiar with the fennel syntax and vim docs.</p><p>The configuration is inspired by <a href='https://github.com/nvim-lua/kickstart.nvim'>kickstart.nvim</a>. More extensive configuration can be found on my <a href='https://github.com/Samy-33/dotfiles/tree/master/dotcom/.config/nvim'>dotfiles</a>.</p><blockquote><p> If there's a bug somewhere in here or you have a doubt, feel free to open an issue <a href='https://github.com/Samy-33/blog/issues'>here</a>. </p></blockquote>]]></content>
+  </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/neovim-clojure-pde-1.html</id>
     <link href="https://github.com/borkdude/quickblog/neovim-clojure-pde-1.html"/>
@@ -34,21 +391,21 @@ mkdir -p $HOME/.config/nvim/fnl/user
 
 # Creates the file
 touch $HOME/.config/nvim/fnl/user/core.fnl
-</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; core.fnl
+</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; fnl/user/core.fnl
 &#40;println &quot;Hello, world! This is fennel config!&quot;&#41;
 </code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-bash">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
-</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>Let's open <code>core.fnl</code> and just save it by <code>:write</code>. You'll notice a prompt asking you to allow nfnl to transpile the files. Go ahead and allow it. When you look at the <code>$HOME/.config.nvim</code> directory, you should have a <code>lua</code> directory with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
+</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>On opening <code>core.fnl</code>, a prompt says that <code>.nfnl.fnl</code> is not trusted. Press <code>a</code> to allow (mark it as trusted). This is because <code>nfnl</code> by default won't compile files in a directory unless we specifically allow it to. Once we allow and save the <code>core.fnl</code> file, by using <code>:write</code> command, a new file <code>lua/user/core.lua</code> gets generated with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
 -- ...
 -- append this to the bottom of init.lua file.
 require&#40;'user.core'&#41;
-</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote><h4 id="to&#95;be&#95;continued!">To be continued!</h4></p>]]></content>
+</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote>Hop on to the <a href='/neovim-clojure-pde-2'>next part</a>.</p>]]></content>
   </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/quickblog-setup.html</id>
     <link href="https://github.com/borkdude/quickblog/quickblog-setup.html"/>
     <title>Self hosting personal blog</title>
     <updated>2024-01-10T23:59:59+00:00</updated>
-    <content type="html"><![CDATA[<blockquote><p> This post is aimed at a fairly technical audience. It expects familiarity with <em>clojure</em>, <em>babashka</em>, <em>git</em>, <em>github</em>, <em>cloudflare</em> and <em>markdown</em> syntax. </p></blockquote><p><strong>Prerequisites</strong>: Install babashka and git</p><p>As mentioned in my previous <a href='/new-year-2024'>blog</a>, I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.</p><p>Recently I found the amazing <a href='https://github.com/borkdude/quickblog'>quickblog</a>, that helped me get up and running with my first post within two hours.</p><p>Without wasting any more word, let's get started.</p><h2 id="outline">Outline</h2><p>In this post, we will</p><ul><li>Set up a blog repository using quickblog</li><li>Host it on github</li><li>Write a github action config to generate static files on push to <code>main</code> branch</li><li>Set up a CD pipeline on cloudflare to deploy the blog</li><li>Point a custom domain to the blog site</li></ul><h2 id="what&#95;is&#95;quickblog?">What is quickblog?</h2><p>Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.</p><h2 id="setting&#95;up&#95;quickblog">Setting up quickblog</h2><p>Create a directory that'll hold your blogging engine and blog posts. I will call it <code>blog</code>. Inside <code>blog</code> directory, create a <code>bb.edn</code> file. The structure looks like the following:</p><pre><code class="lang-bash">➜ tree blog 
+    <content type="html"><![CDATA[<blockquote><p> This post is aimed at a fairly technical audience. It expects familiarity with <em>clojure</em>, <em>babashka</em>, <em>git</em>, <em>github</em>, <em>cloudflare</em> and <em>markdown</em> syntax. </p></blockquote><p><strong>Prerequisites</strong>: Install babashka and git</p><p>As mentioned in my previous <a href='/new-year-2024'>post</a>, I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.</p><p>Recently I found the amazing <a href='https://github.com/borkdude/quickblog'>quickblog</a>, that helped me get up and running with my first post within two hours.</p><p>Without wasting any more word, let's get started.</p><h2 id="outline">Outline</h2><p>In this post, we will</p><ul><li>Set up a blog repository using quickblog</li><li>Host it on github</li><li>Write a github action config to generate static files on push to <code>main</code> branch</li><li>Set up a CD pipeline on cloudflare to deploy the blog</li><li>Point a custom domain to the blog site</li></ul><h2 id="what&#95;is&#95;quickblog?">What is quickblog?</h2><p>Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.</p><h2 id="setting&#95;up&#95;quickblog">Setting up quickblog</h2><p>Create a directory that'll hold your blogging engine and blog posts. I will call it <code>blog</code>. Inside <code>blog</code> directory, create a <code>bb.edn</code> file. The structure looks like the following:</p><pre><code class="lang-bash">➜ tree blog 
 blog
 └── bb.edn
 

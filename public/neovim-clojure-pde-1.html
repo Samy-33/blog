@@ -101,14 +101,14 @@ mkdir -p $HOME/.config/nvim/fnl/user
 
 # Creates the file
 touch $HOME/.config/nvim/fnl/user/core.fnl
-</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; core.fnl
+</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; fnl/user/core.fnl
 &#40;println &quot;Hello, world! This is fennel config!&quot;&#41;
 </code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-bash">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
-</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>Let's open <code>core.fnl</code> and just save it by <code>:write</code>. You'll notice a prompt asking you to allow nfnl to transpile the files. Go ahead and allow it. When you look at the <code>$HOME/.config.nvim</code> directory, you should have a <code>lua</code> directory with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
+</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>On opening <code>core.fnl</code>, a prompt says that <code>.nfnl.fnl</code> is not trusted. Press <code>a</code> to allow (mark it as trusted). This is because <code>nfnl</code> by default won't compile files in a directory unless we specifically allow it to. Once we allow and save the <code>core.fnl</code> file, by using <code>:write</code> command, a new file <code>lua/user/core.lua</code> gets generated with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
 -- ...
 -- append this to the bottom of init.lua file.
 require&#40;'user.core'&#41;
-</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote><h4 id="to&#95;be&#95;continued!">To be continued!</h4></p>
+</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote>Hop on to the <a href='/neovim-clojure-pde-2'>next part</a>.</p>
 
 <p><i>Published: 2024-01-26</i></p>
 

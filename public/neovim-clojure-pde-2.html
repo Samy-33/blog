@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Abstract Symphony</title>
+    <title>Neovim as the Clojure PDE - II</title>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link type="application/atom+xml" rel="alternate" href="atom.xml" title="Abstract Symphony">
+    <link type="application/atom+xml" rel="alternate" href="atom.xml" title="Neovim as the Clojure PDE - II">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.28.0/components/prism-clojure.min.js"></script>
@@ -25,18 +25,14 @@
 
 
     <!-- Social sharing (Facebook, Twitter, LinkedIn, etc.) -->
-    <meta name="title" content="Abstract Symphony">
-    <meta name="twitter:title" content="Abstract Symphony">
-    <meta property="og:title" content="Abstract Symphony">
+    <meta name="title" content="Neovim as the Clojure PDE - II">
+    <meta name="twitter:title" content="Neovim as the Clojure PDE - II">
+    <meta property="og:title" content="Neovim as the Clojure PDE - II">
     <meta property="og:type" content="website">
 
-    <meta name="description" content="A blog about life, code and philosophy">
-    <meta name="twitter:description" content="A blog about life, code and philosophy">
-    <meta property="og:description" content="A blog about life, code and philosophy">
 
-
-    <meta name="twitter:url" content="https://github.com/borkdude/quickblog/index.html">
-    <meta property="og:url" content="https://github.com/borkdude/quickblog/index.html">
+    <meta name="twitter:url" content="https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html">
+    <meta property="og:url" content="https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html">
 
 
     <meta name="twitter:card" content="summary">
@@ -79,10 +75,12 @@
 
     <div class="wrapper">
 
-      
-    <div>
-        <h1><a href="neovim-clojure-pde-2.html">Neovim as the Clojure PDE - II</a></h1>
-        <p><a href='/neovim-clojure-pde-1'>Click here</a> if you missed the first part.</p><p>Welcome back, folks. It's been a while since the first post of this series came out.</p><p>Today's agenda is to install some basic plugins and configure them. While doing that, we'll learn some fennel and have our own config in parallel.</p><h3 id="why&#95;plugins?">Why Plugins?</h3><p>Plugins enhance the raw editor by adding features that the raw Neovim doesn't provide out of the box. In VSCode world, we call them extensions.</p><p>We need a plugin that makes it easy for us to install and use other plugins. These are called <code>Plugin Managers</code>. There are many of them in Neovim/Vim world like <a href='https://github.com/wbthomason/packer.nvim'>Packer</a>, <a href='https://github.com/junegunn/vim-plug'>Vim Plug</a>, <a href='https://github.com/folke/lazy.nvim'>Lazy</a> et al. For the purpose of this post and because it's the new shiny thing, we will use <strong>Lazy</strong>.</p><h3 id="plugins.fnl">plugins.fnl</h3><p>Just to recap, after our <a href='/neovim-clojure-pde-1'>last post</a>, the config directory looks like the following<pre><code class="lang-sh">$ tree -L 3 &#126;/.config/nvim
+      <h1>
+  
+  Neovim as the Clojure PDE - II
+  
+</h1>
+<p><a href='/neovim-clojure-pde-1'>Click here</a> if you missed the first part.</p><p>Welcome back, folks. It's been a while since the first post of this series came out.</p><p>Today's agenda is to install some basic plugins and configure them. While doing that, we'll learn some fennel and have our own config in parallel.</p><h3 id="why&#95;plugins?">Why Plugins?</h3><p>Plugins enhance the raw editor by adding features that the raw Neovim doesn't provide out of the box. In VSCode world, we call them extensions.</p><p>We need a plugin that makes it easy for us to install and use other plugins. These are called <code>Plugin Managers</code>. There are many of them in Neovim/Vim world like <a href='https://github.com/wbthomason/packer.nvim'>Packer</a>, <a href='https://github.com/junegunn/vim-plug'>Vim Plug</a>, <a href='https://github.com/folke/lazy.nvim'>Lazy</a> et al. For the purpose of this post and because it's the new shiny thing, we will use <strong>Lazy</strong>.</p><h3 id="plugins.fnl">plugins.fnl</h3><p>Just to recap, after our <a href='/neovim-clojure-pde-1'>last post</a>, the config directory looks like the following<pre><code class="lang-sh">$ tree -L 3 &#126;/.config/nvim
 ├── fnl
 │   └── user
 │       └── core.fnl
@@ -433,190 +431,35 @@ require&#40;'user.core'&#41;.setup&#40;&#41;
 
 {: setup}
 </code></pre></p><p>And that should be it. I know, this blog is long and contains a lot of code. Most of it should be self explanatory once you get familiar with the fennel syntax and vim docs.</p><p>The configuration is inspired by <a href='https://github.com/nvim-lua/kickstart.nvim'>kickstart.nvim</a>. More extensive configuration can be found on my <a href='https://github.com/Samy-33/dotfiles/tree/master/dotcom/.config/nvim'>dotfiles</a>.</p><blockquote><p> If there's a bug somewhere in here or you have a doubt, feel free to open an issue <a href='https://github.com/Samy-33/blog/issues'>here</a>. </p></blockquote>
-        
-        
-        <p><i>Published: 2024-02-29</i></p>
-        
-            <p><i>
-                Tagged:
-                
-                    <span class="tag">
-                        <a href="tags/neovim.html">neovim</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/clojure.html">clojure</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/fennel.html">fennel</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/lua.html">lua</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/text-editor.html">text-editor</a>
-                    </span>
-                
-            </i></p>
-        
-    </div>
 
-    <div>
-        <h1><a href="neovim-clojure-pde-1.html">Neovim as the Clojure PDE - I</a></h1>
-        <p>Hello, fellow text editor enthusiasts. Welcome to <em>Abstract Symphony</em>, meaning of which, nobody knows and has nothing to do with the post's agenda.</p><p>You may gently ask for the meaning of PDE, what the fuck does that mean?</p><p>Well, you don't have to be so rude. It's an abbreviation for <em>Personalized Development Environment</em>, coined by <a href='https://twitter.com/teej_dv'>TJ</a>, Neovim's marketing head.</p><h3 id="why&#95;neovim?">Why Neovim?</h3><p>You know, same old bullshit like speed, muscle memory, extension of your body/mind, spiritualism, nirvana, moksha and so on. Nothing serious. Jokes aside, the real reason was seeing how fast <a href='https://twitter.com/ThePrimeagen'>Prime</a> was, in <a href='https://youtu.be/SGBuBSXdtLY?si=0HJtUqZEIT3B3izX&t=69'>giving up</a> on clojure.</p><h3 id="why&#95;clojure?">Why Clojure?</h3><p>Because I love my high functioning parens. I can lisp down, 100s of reasons why, but that's beyond the scope. This emotion is hosted on a solid and reliable foundation. I am sure, a dynamic and immutable relationship is what keeps us tied together so strongly. Please forgive me, for my love for punning (nil?). <a href='https://clojure.org/about/rationale'>IYKYK</a>.</p><h3 id="init.lua">init.lua</h3><p>Neovim is a professional's tool. You need to deserve it, earn its respect, you know? Like Thor and his hammer.</p><p>Or you can just <a href='https://github.com/neovim/neovim/blob/master/INSTALL.md'>install</a> neovim and get started. At first sight, it doesn't look like anything more than a trap that you can never get out of (trust me you can :q!). And no, that was not my failed attempt at putting an emojee.</p><p>Create an <code>init.lua</code> file in <code>$HOME/.config/nvim</code> directory. This will be the entrypoint for your neovim configuration. It's similar to the <code>main</code> method in a java/c/cpp projects, an entry-point for the program to run.</p><p>Go ahead and add a <code>print&#40;&quot;Hello, world!&quot;&#41;</code> to the file. Now, when you run <code>nvim</code>, you should see <code>Hello, world!</code> at the bottom-left of your screen. Congratulations, for your first configured neovim instance.</p><h3 id="leader&#95;and&#95;localleader">Leader and LocalLeader</h3><p>Just like how each country needs good leaders to function properly, neovim is no different. You should define a leader and localleader according to your convenience. People usually choose <code>&lt;Space&gt;</code> or <code>&quot;,&quot;</code> as their leader. I'll go ahead with <code>&quot;,&quot;</code> as that is what I am used to.</p><p>But wait, what is the purpose of the leaders, you ask? Well, the main reason is the <code>&quot;plugins&quot;</code>. Plugin writers are not aware of how you have configured your editor. They can't arbitrarily setup keybindings in their plugins, as they may conflict with your bindings.</p><p>Neovim API exposes options via <code>vim.g</code>, <code>vim.o</code>, <code>vim.opt</code>, <code>vim.bo</code> and <code>vim.wo</code>. We can control behaviour of Neovim by setting these options. <code>vim.g</code> is used for <code>global</code> scoped options. We can read more about them in Neovim's help text using <code>:help vim.g</code> or <code>:help vim.o</code> etc.</p><p>Let's set our globally scoped leader and localleader.</p><pre><code class="lang-lua">-- init.lua
-vim.g.mapleader = ','
-vim.g.maplocalleader = ','
-</code></pre><p><strong>NSFW</strong>: <a href='https://learnvimscriptthehardway.stevelosh.com/chapters/06.html'>This article</a> goes deeper into how leader/localleader is helpful.</p><h3 id="we'll&#95;use&#95;fennel&#95;as&#95;our&#95;config&#95;language">We'll use Fennel as our config language</h3><p>Although, Neovim officially supports lua as its configuration language, we will use <a href='https://fennel-lang.org/'>Fennel</a>. Because, we love our parens. And also, we like to struggle and learn.</p><p>Fennel transpiles into lua, so we need a Neovim plugin to transpile our fennel files into lua. Olical's <a href='https://github.com/Olical/nfnl'>nfnl</a> does exactly that. We will update our <code>init.lua</code> to download <code>nfnl</code>. We will also add nfnl's path to neovim's runtime path, so that it can find <code>nfnl</code> plugin.</p><pre><code class="lang-lua">-- init.lua
--- ...
+<p><i>Published: 2024-02-29</i></p>
 
-local nfnl&#95;path = vim.fn.stdpath 'data' .. '/lazy/nfnl'
-
-if not vim.uv.fs&#95;stat&#40;nfnl&#95;path&#41; then
-  print&#40;&quot;Could not find nfnl, cloning new copy to&quot;, nfnl&#95;path&#41;
-  vim.fn.system&#40;{'git', 'clone', 'https://github.com/Olical/nfnl', nfnl&#95;path}&#41;
-end
-
-vim.opt.rtp:prepend&#40;nfnl&#95;path&#41;
-
-require&#40;'nfnl'&#41;.setup&#40;&#41;
-</code></pre><p>We define a local variable <code>nfnl&#95;path</code>. It holds the directory path where we will download <code>nfnl</code>.</p><ul><li><strong>vim.fn.stdpath 'data'</strong> returns neovim's <code>data</code> directory.<blockquote><p> <code>:help stdpath</code> to know more about standard paths. </li><li>"<strong>..</strong>" is lua's string concatenation operator. So essentially, we get neovim's standard data path and append <code>/lazy/nfnl</code> to it. We'll store <code>nfnl</code> here.</li><li><strong>vim.uv.fs&#95;stat(nfnl_path)</strong> returns information about file/directory. If the file doesn't exist, it returns nil.</li><li><strong>vim.fn.system</strong> allows us to execute shell commands. We can also use <code>vim.system&#40;...&#41;</code> instead. They are exactly the same.</li><li>We ran <code>git clone</code> to download nfnl from its official github repository.</li><li>Then we added <code>nfnl&#95;path</code> to the neovim's runtime path.</li><li>At last, we require the <code>nfnl</code> module and call <code>setup</code> on it.</li></ul></p></blockquote><p>Let us create a directory to store our fennel config files. And also a <code>core.fnl</code> file inside that directory.</p><pre><code class="lang-bash"># Creates the directory
-mkdir -p $HOME/.config/nvim/fnl/user
-
-# Creates the file
-touch $HOME/.config/nvim/fnl/user/core.fnl
-</code></pre><p>Let's add a simple <code>Hello, world!</code> print form in our <code>core.fnl</code>.<pre><code class="lang-clojure">;; fnl/user/core.fnl
-&#40;println &quot;Hello, world! This is fennel config!&quot;&#41;
-</code></pre></p><p>When we restart our neovim instance, nothing happens. We should have seen a <i>hello world</i> message. We're missing a key <code>nfnl</code> config.</p><p><code>nfnl</code> looks for a <code>.nfnl.fnl</code> file in a directory for configuration about which files to compile and how. Create a <code>.nfnl.fnl</code> file with empty config in <code>$HOME/.config/nvim</code> directory.<pre><code class="lang-bash">echo {} &gt; $HOME/.config/nvim/.nfnl.fnl
-</code></pre></p><p>When we restart our instance again, we still don't see anything printed. Well, there are a couple of things pending.</p><ul><li>Fennel files haven't been transpiled yet. <code>nfnl</code> transpiles <code>fnl</code> files on save by default.</li><li>In our <code>init.lua</code>, we haven't <code>require</code>d the <code>user.core</code>, so nvim doesn't know about it just yet.</li></ul><p>On opening <code>core.fnl</code>, a prompt says that <code>.nfnl.fnl</code> is not trusted. Press <code>a</code> to allow (mark it as trusted). This is because <code>nfnl</code> by default won't compile files in a directory unless we specifically allow it to. Once we allow and save the <code>core.fnl</code> file, by using <code>:write</code> command, a new file <code>lua/user/core.lua</code> gets generated with transpiled lua code corresponding to the <code>core.fnl</code>.</p><p>Let's require <code>user/core</code> module in <code>init.lua</code><pre><code class="lang-lua">-- init.lua
--- ...
--- append this to the bottom of init.lua file.
-require&#40;'user.core'&#41;
-</code></pre></p><p>Now, when you restart neovim, it greets you with:<blockquote><p> Hello, world! This is fennel config!  </p></blockquote>Hop on to the <a href='/neovim-clojure-pde-2'>next part</a>.</p>
-        
-        
-        <p><i>Published: 2024-01-26</i></p>
-        
-            <p><i>
-                Tagged:
-                
-                    <span class="tag">
-                        <a href="tags/neovim.html">neovim</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/clojure.html">clojure</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/fennel.html">fennel</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/lua.html">lua</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/text-editor.html">text-editor</a>
-                    </span>
-                
-            </i></p>
-        
-    </div>
-
-    <div>
-        <h1><a href="quickblog-setup.html">Self hosting personal blog</a></h1>
-        <blockquote><p> This post is aimed at a fairly technical audience. It expects familiarity with <em>clojure</em>, <em>babashka</em>, <em>git</em>, <em>github</em>, <em>cloudflare</em> and <em>markdown</em> syntax. </p></blockquote><p><strong>Prerequisites</strong>: Install babashka and git</p><p>As mentioned in my previous <a href='/new-year-2024'>post</a>, I had a wish to start writing in public for the last couple of years. Mostly to frame my own thoughts in a structured manner and to keep a public record so others can relate or criticize.</p><p>Recently I found the amazing <a href='https://github.com/borkdude/quickblog'>quickblog</a>, that helped me get up and running with my first post within two hours.</p><p>Without wasting any more word, let's get started.</p><h2 id="outline">Outline</h2><p>In this post, we will</p><ul><li>Set up a blog repository using quickblog</li><li>Host it on github</li><li>Write a github action config to generate static files on push to <code>main</code> branch</li><li>Set up a CD pipeline on cloudflare to deploy the blog</li><li>Point a custom domain to the blog site</li></ul><h2 id="what&#95;is&#95;quickblog?">What is quickblog?</h2><p>Quickblog is a light-weight static blog engine for clojure and babashka. It allows you to write your posts in markdown, provides live reloading and generates SEO optimized static files.</p><h2 id="setting&#95;up&#95;quickblog">Setting up quickblog</h2><p>Create a directory that'll hold your blogging engine and blog posts. I will call it <code>blog</code>. Inside <code>blog</code> directory, create a <code>bb.edn</code> file. The structure looks like the following:</p><pre><code class="lang-bash">➜ tree blog 
-blog
-└── bb.edn
-
-1 directory, 1 file
-</code></pre><p>Let's add <em>quickblog</em> as a dependency in our <code>deps.edn</code>.</p><pre><code class="lang-clojure">;; deps.edn
-{:deps {io.github.borkdude/quickblog {:git/tag &quot;v0.3.6&quot;
-                                      :git/sha &quot;d00e14b1176416b7d7b88e6608b6975888208355&quot;}}}}
-</code></pre><p>Replace the <code>:git/tag</code> and <code>:git/sha</code> with the latest ones in <a href='https://github.com/borkdude/quickblog'>quickblog repository</a>.</p><p>Now we will add a babashka task that hooks into <code>quickblog</code> api and exposes it as a command line tool.</p><pre><code class="lang-clojure">{:deps {...} ;; folded deps map
-
- :tasks
- {:requires &#40;&#91;quickblog.cli :as cli&#93;&#41;
-  :init &#40;def opts {:blog-title &quot;&lt;Your Blog Title&gt;&quot;
-                   :blog-description &quot;&lt;Short Blog Description&gt;&quot;
-                   :about-link &quot;&lt;Your Website Link&gt;&quot;
-                   :twitter-handle &quot;&lt;Twitter Handle&gt;&quot;}&#41;
-  quickblog {:doc &quot;Start blogging quickly! Run `bb quickblog help` for details.&quot;
-             :task &#40;cli/dispatch opts&#41;}}}
-</code></pre><p>Replace all the options, with your own.</p><p>Execute <code>bb quickblog help</code>, it should print a detailed help text about using quickblog.</p><h2 id="first&#95;blog&#95;post">First blog post</h2><p>Now that we have quickblog setup, we will generate our first post. Quickblog command line has a <code>new</code> subcommand that allows us to do just that.</p><pre><code class="lang-bash">bb quickblog new --file my-first-blog-post.md --title &quot;My first blog post&quot;
-</code></pre><p>The directory structure after the last command should look like the following<pre><code class="lang-bash">➜  blog tree .
-.
-├── bb.edn
-└── posts
-    └── my-first-blog-post.md
-
-2 directories, 2 files
-</code></pre></p><p>Run a live reloading server using <code>bb quickblog watch</code>, it spins up a http server on <code>localhost:1888</code> by default.</p><p>Write your blog post, initialize the <code>blog</code> directory as a git repository and commit your markdown changes. You would also want to add a <code>.gitignore</code> file that excludes some directories from committing like <code>.work</code>, <code>.lsp</code> and <code>.clj-kondo</code>. We will also exclude the <code>public</code> directory from the commit to keep the main branch clean.</p><h2 id="setting&#95;up&#95;github&#95;action">Setting up github action</h2><p>Via github action, we will</p><ul><li>Switch to <code>deploy</code> branch</li><li>Generate the static files</li><li>Commit and push them to the repository</li></ul><p>For this, we will need to allow github actions <code>write</code> permissions on the repository.</p><p>In your repository, go to the <strong>Settings > Actions > General</strong>. In the <code>Workflow permissions</code> select <strong>Read and write permissions</strong> for now. Later, you can spericy more granular permissions <a href='https://docs.github.com/actions/reference/authentication-in-a-workflow#modifying-the-permissions-for-the-github_token'>documented here</a>.</p><p>Create the github action config file: <code>.github/workflows/deploy.yml</code>.<pre><code class="lang-yml">on:
-  push:
-    branches:
-      - main
-env:
-  TZ: Asia/Kolkata # Replace this with your time zone
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: git config
-        run: |
-          git config --global user.email &quot;&lt;Github Email&gt;&quot;
-          git config --global user.name &quot;&lt;Github Username&gt;&quot;
-      - name: Switch to deploy branch
-        uses: actions/checkout@v4
-        with:
-          ref: deploy
-          fetch-depth: 0
-      - name: Merge main into deploy
-        run: git merge origin/main
-      - name: Setup babashka
-        uses: just-sultanov/setup-babashka@v2
-        with:
-          version: 1.3.186 # Update this babashka version to latest
-      - name: clean
-        run: bb quickblog clean
-      - name: build
-        run: bb quickblog render
-      - name: git
-        run: |
-          export CURRENT&#95;TIME=$&#40;date&#41;
-          git add public
-          git commit -m &quot;deploy @ ${CURRENT&#95;TIME}&quot;
-          git push origin -u deploy
-</code></pre></p><p>Replace the placeholders for github email and username, and other parameters. Apart from that the file should be self explanatory.</p><p>We will keep it in our local for now, and push it later to github.</p><h2 id="setting&#95;up&#95;cloudflare">Setting up cloudflare</h2><p>Create a new cloudflare account if you don't have it already. Log in to the account and go to <strong>Workers & Pages</strong> in the left panel.</p><ul><li>We will <em>create an application</em></li><li>Go to <strong>Pages</strong> tab.</li><li>And <strong>Connect to Git</strong></li></ul><p>A modal pops up, where you select your Github account and the repository to connect. You'll be redirected to github. Allow access to just the <code>blog</code> repository and continue.</p><p>Now we go to the next step, add the project name and set the <code>Production branch</code> to <strong>deploy</strong> and <code>Build output directory</code> to <strong>public</strong>. <em>Click and deploy</em>.</p><p>Cloudflare will consider changes on all the branches other than the <code>Production branch</code>, that we set in the previous step, as preview branches. This means that changes on these other branches will also trigger a build, consuming our precious build quota.</p><p>To disable the preview branches, we will go to the project we just setup <strong>-> Settings tab -> Build & deployment -> Configure preview deployments -> None -> Save</strong>. We are done with the setting up our cloudflare page. It should be visible at <code>&lt;project-identifier&gt;.pages.dev</code>.</p><blockquote><p> <strong>Note</strong>: Create the main and deploy branches and push them to our github repository. This will trigger github action build, after which cloudflare page build and you should see you first blog up on the url mentioned above. </p></blockquote><h2 id="setting&#95;up&#95;custom&#95;domain">Setting up custom domain</h2><p>Here I am assuming that you already have a domain bought and configured on cloudflare. If you don't, then there are a couple of platforms that I use to find and get best offer for domains:</p><ul><li><a href='https://www.namecheap.com/'>Namecheap</a></li><li><a href='https://www.godaddy.com/'>GoDaddy</a></li><li><a href='https://www.bigrock.in'>BigRock</a></li><li><a href='https://www.hostinger.in/domain-name-search'>Hostinger</a></li></ul><p>Once you get a domain, transfer it to cloudflare by following <a href='https://developers.cloudflare.com/registrar/get-started/transfer-domain-to-cloudflare/'>these steps</a>.</p><p>Setting up a custom domain for your page is simple. Open our page project, and go to <strong>Custom domains</strong> tab. Click on <strong>Set up a custom domain</strong> and follow the steps.</p><blockquote><p> <strong>PS</strong>: There are multiple ways to host your blog, and probably most of them would be simpler than this setup. It was my first time setting up my blog, and can certainly be improved. Will post an update when I migrate to a better pipeline. A similar post: <a href='https://www.eknert.com/blog/quickblog'>Quickblog by Anders Means Different</a> </p></blockquote><blockquote><p> If you find an error or have a question, open an <a href='https://github.com/Samy-33/blog/issues/new'>issue</a>. </p></blockquote>
-        
-        
-        <p><i>Published: 2024-01-10</i></p>
-        
-            <p><i>
-                Tagged:
-                
-                    <span class="tag">
-                        <a href="tags/tools.html">tools</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/clojure.html">clojure</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/blog.html">blog</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/babashka.html">babashka</a>
-                    </span>
-                
-            </i></p>
-        
-    </div>
+<p>
+  <i>
+  Tagged:
+  
+  <span class="tag">
+    <a href="tags/neovim.html">neovim</a>
+  </span>
+  
+  <span class="tag">
+    <a href="tags/clojure.html">clojure</a>
+  </span>
+  
+  <span class="tag">
+    <a href="tags/fennel.html">fennel</a>
+  </span>
+  
+  <span class="tag">
+    <a href="tags/lua.html">lua</a>
+  </span>
+  
+  <span class="tag">
+    <a href="tags/text-editor.html">text-editor</a>
+  </span>
+  
+  </i>
+</p>
 
 
 
