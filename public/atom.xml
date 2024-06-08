@@ -3,11 +3,18 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-02-29T13:18:58+00:00</updated>
+  <updated>2024-06-08T16:33:30+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/unfinished-suffering.html</id>
+    <link href="https://github.com/borkdude/quickblog/unfinished-suffering.html"/>
+    <title>[Unfinished] Suffering</title>
+    <updated>2024-06-08T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<p>We keep romanticizing suffering. That's all okay. But, if that's all we do about our suffering, we are going in the wrong direction.</p><p>Suffering is necessary to feel the joy from its absence. But what if suffering itself becomes joyful. We lose the incentive to overcome it.</p><p>We don't think about the end of the dark tunnel, the dawn after a dark stormy night.</p><p>We are content with the suffering itself because it's common among our peers. The good old sense of belonging wins over the will to rid ourselves of the pain.</p><p>That's why I prefer solitude. There's no other that I subconsciously mimic. There's no one I secretly love, envy or hate. I am an open book, when alone, albeit a messed up one.</p><p>A whole lot of us dislike change, including me. Mainly the ones that come unexpectedly, that we have no idea about.</p><p>eof</p>]]></content>
+  </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html</id>
     <link href="https://github.com/borkdude/quickblog/neovim-clojure-pde-2.html"/>
