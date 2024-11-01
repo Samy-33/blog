@@ -1,3 +1,10 @@
+:root {
+  --primary: #012a7d;
+  --primary-bg: #e8effc;
+
+  --primary-fg: white;
+}
+
 body {
   /* borrowed from metaredux.com */
   font: 400 16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
@@ -11,7 +18,7 @@ h1, h2, h3 {
 }
 
 a {
-  color: rgb(51, 65, 85)
+  color: var(--primary);
 }
 
 .wrapper {
@@ -69,4 +76,21 @@ ul.index {
 
 code {
   white-space: pre;
+  background-color: var(--primary);
+  color: var(--primary-fg);
+  padding: 4px;
+  border-radius: 5px;
+  font-size: 12px;
+}
+
+blockquote {
+  background-color: var(--primary-bg);
+  margin-block: unset;
+  margin-inline: unset;
+  padding: 15px 15px;
+  border-left: 4px solid var(--primary);
+}
+
+blockquote>p {
+  margin: 0;
 }
