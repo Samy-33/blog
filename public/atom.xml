@@ -3,11 +3,274 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-11-01T13:48:43+00:00</updated>
+  <updated>2024-11-10T13:12:45+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/clj-automation-1.html</id>
+    <link href="https://github.com/borkdude/quickblog/clj-automation-1.html"/>
+    <title>Clojure Automation #1</title>
+    <updated>2024-11-07T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<h2 id="content">Content</h2><ul><li><a href='#why?'>Why?</a></li><li><a href='#100_ft_view'>100 ft View</a></li><li><a href='#project_setup'>Project Setup</a></li><li><a href='#scraping_information'>Scraping Information</a><ul><li>Figuring out the API</li><li>Parsing Information</li></ul></li><li><a href='#telegram_bot_setup'>Telegram Bot Setup</a><ul><li>Creating the bot and channel</li><li>Sending message</li></ul></li><li><a href='#deployment'>Deployment</a></li><li><a href='#conclusion'>Conclusion</a></li></ul><h2 id="why?">Why?</h2><p>My whole family has applied for new passports, and I want to know the application status. But every time I open the <a href='https://www.passportindia.gov.in/AppOnlineProject/welcomeLink'>website</a>, I feel like giving up on life.</p><p>What could be worse, you say? Well, doing it four times.</p><p>Now, I use <code>Check Application Status</code> option on the homepage. It's an optimization by storing <code>File Numbers</code> and <code>Date of Births</code> in my BitWarden extension. That helps avoid having to fill the Captcha and logging in multiple times. It still hurts, albeit a bit less.</p><p>I abhor the 2 minutes, I spend each time I have to check the status. So, I'll spend next 5 hours setting up an automation script to notify me every 3 hours.</p><h2 id="100&#95;ft&#95;view">100 ft View</h2><p>I will need the following:</p><ul><li>A job running every 3 hours</li><li>A way to fetch passport application status</li><li>A way to notify me</li></ul><p>This is how it's going to work:</p><ul><li>At the onset of each 3rd hour, run a script</li><li>Script will scrape the information from passport status webpage</li><li>Parse out required information from the scraped page</li><li>Send a notification to a chat app (whatsapp or telegram)</li></ul><h2 id="project&#95;setup">Project Setup</h2><p>I start by defining the <code>deps.edn</code> file in the project root. This is the beginning of the project. <code>deps.edn</code> will contains the project dependencies and configuration for build and release.</p><p>Which dependencies will I need?</p><ul><li>To scrape information<ul><li>HTTP Client</li><li>HTML Parser and Selector</li><li>JSON encoder and decoder to convert from clojure data structures to JSON</li></ul></li><li>To send messages to Telegram<ul><li>Again the same dependencies, except HTML Parser</li></ul></li><li>For development a REPL server library</li></ul><p><code>deps.edn</code> file looks like the following:</p><pre><code class="lang-clojure">; deps.edn
+{:paths &#91;&quot;src&quot;&#93;                                                     ; Where the source code lives
+ :deps {clj-http/clj-http {:mvn/version &quot;3.13.0&quot;}                   ; HTTP Client
+        org.clj-commons/hickory {:mvn/version &quot;0.7.5&quot;}              ; HTML Parser and Selector
+        cheshire/cheshire {:mvn/version &quot;5.13.0&quot;}}                  ; JSON encoder/decoder
+ :aliases {:dev {:extra-paths &#91;&quot;env/dev&quot;&#93;                           ; dev environment config
+                 :extra-deps {nrepl/nrepl {:mvn/version &quot;1.3.0&quot;}}   ; nrepl server development
+                 :main-opts &#91;&quot;-m&quot; &quot;nrepl.cmdline&quot;&#93;}                 ; Options for main function in `dev` alias
+           :prod {:extra-paths &#91;&quot;env/prod&quot;&#93;}                        ; Prod config
+           :passport {:exec-fn passport-status/execute!}}}          ; Alias to execute actual flow
+</code></pre><p>Now I can start the REPL server by executing the following command in the terminal:<pre><code class="lang-sh">$ clj -M:dev
+</code></pre></p><p>As an output of the command, I'll get the <code>nrepl-port</code> that I can use to connect to the REPL server from the editor. I can also use the <code>.nrepl-port</code> file created by the above command.</p><p>I also create the following directory structure:<pre><code class="lang-sh">
+➜  automations git:&#40;master&#41; ✗ tree .
+.
+├── deps.edn
+├── env
+│   ├── dev
+│   │   └── config.clj
+│   └── prod
+│       └── config.clj
+└── src
+    ├── passport&#95;status.clj
+    └── telegram.clj
+
+4 directories, 5 files
+</code></pre></p><ul><li><code>src/passport&#95;status.clj</code> contains all the logic related to passport status fetching</li><li><code>src/telegram.clj</code> contains all the logic to interact with <code>telegram</code></li></ul><h2 id="scraping&#95;information">Scraping Information</h2><p>To find out how to extract passport application information, I manually go through the process.</p><h3 id="figuring&#95;out&#95;the&#95;api">Figuring out the API</h3><ul><li>Go to the <a href='https://passportindia.gov.in'>Passport Website FrontPage</a></li><li>Close the annoying popup.</li><li>Oh, I see a <code>Track Application Status</code> button on the left.</li></ul><p><img style="align-self: center;" src="./assets/clj-automation-1/passport-main-page.png" alt="Last goodbye to Dadaji" height="300" width="300" /></p><ul><li>When I click on it, they ask to provide <code>File Number</code> and <code>Date of Birth</code>, and type of service.</li><li>When I fill that info and click <code>Track Status</code>. I notice the following request being sent in the browser's network tab (Copied in the curl format):</li></ul><pre><code class="lang-sh">curl 'https://passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew' \
+  -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,&#42;/&#42;;q=0.8,application/signed-exchange;v=b3;q=0.7' \
+  -H 'Accept-Language: en-US,en;q=0.9,hi-IN;q=0.8,hi;q=0.7' \
+  -H 'Cache-Control: max-age=0' \
+  -H 'Connection: keep-alive' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -H 'Cookie: JSESSIONID=&lt;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&gt;' \
+  -H 'DNT: 1' \
+  -H 'Origin: https://passportindia.gov.in' \
+  -H 'Referer: https://passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew' \
+  -H 'Sec-Fetch-Dest: document' \
+  -H 'Sec-Fetch-Mode: navigate' \
+  -H 'Sec-Fetch-Site: same-origin' \
+  -H 'Sec-Fetch-User: ?1' \
+  -H 'Upgrade-Insecure-Requests: 1' \
+  -H 'sec-ch-ua-mobile: ?0' \
+  --data-raw 'apptUrl=&amp;apptRedirectFlag=&amp;optStatus=Application&#95;Status&amp;fileNo=&lt;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&gt;&amp;applDob=&lt;DD/MM/YYY&gt;&amp;rtiRefNo=&amp;diplArnNo=&amp;appealNo=&amp;appealDob=&amp;action%3AtrackStatusForFileNoNew=Track+Status'
+
+</code></pre><p>Ahah, can I just send it over again and get the same response? Hell yeah. When I execute the above command on terminal, I get an HTTP response. (Thank God, for no Captcha)</p><p>Perfect. Now, let's also try without all those unnecessary headers and data in request body. Turns out we just need to send the request body:<pre><code class="lang-json">{
+  &quot;optStatus&quot;: &quot;Application&#95;Status&quot;,
+  &quot;fileNo&quot;: &quot;ABC&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&#42;&quot;,
+  &quot;applDob&quot;: &quot;DD/MM/YYYY&quot;,
+  &quot;action:trackStatusForFileNoNew&quot;: &quot;Track Status&quot;
+}
+</code></pre></p><p>That really simplifies the problem.</p><h3 id="parsing&#95;information">Parsing Information</h3><p>Let's start by fetching the response. This code goes in <code>src/passport&#95;status.clj</code>.<pre><code class="lang-clojure">&#40;ns passport-status
+  &#40;:require &#91;clj-http.client :as http&#93;&#41;&#41;
+
+;; Data for each passport application
+&#40;def details
+  &#91;{:file-num &quot;ABC234324234&quot;
+    :dob &quot;15/09/1992&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;24/11/1987&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;10/01/1971&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;19/02/2001&quot;}&#93;&#41;
+
+;; URL to fetch passport application status
+&#40;def &#94;:private url
+  &quot;https://www.passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew&quot;&#41;
+
+;; Function that sends a POST request to the above URL
+;; And fetches the actual HTML response
+&#40;defn- fetch-resp &#91;{:keys &#91;file-num dob&#93;}&#93;
+  &#40;http/post url {:form-params {:optStatus &quot;Application&#95;Status&quot;
+                                :fileNo file-num
+                                :applDob dob
+                                :action:trackStatusForFileNoNew &quot;Track Status&quot;}}&#41;&#41;
+</code></pre></p><p>The above code, should help me fetch the response from the server. Now it's time to parse the response and extract the structured information.</p><p>I am inspecting the web page source in the browser's <code>developer tools</code>. The information is in the following structure:<pre><code class="lang-html">&lt;div class=&quot;hd&#95;blue&quot;&gt;
+&lt;table&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;
+        &lt;table&gt;
+          &lt;tbody&gt;
+            &lt;tr&gt;
+              &lt;td&gt; &lt;-- This is what we need
+            &lt;tr&gt;
+              &lt;td&gt; &lt;-- This is what we need
+            &lt;tr&gt;
+              &lt;td&gt; &lt;-- This is what we need
+</code></pre></p><p>Hickory makes it super easy to select those elements with it's <code>hickory.select</code> functions.</p><pre><code class="lang-clojure">&#40;ns passport-status
+  &#40;:require &#91;clj-http.client :as http&#93;
+            &#91;hickory.core :as h&#93;
+            &#91;hickory.select :as s&#93;&#41;&#41;
+
+;; Omitted code
+
+;; Selecting required data from hickory format
+&#40;defn- select-data &#91;hickory&#93;
+  &#40;-&gt;&gt; hickory
+       &#40;s/select &#40;s/follow-adjacent &#40;s/class &quot;hd&#95;blue&quot;&#41; &#40;s/tag :table&#41;&#41;&#41; ; selects element with class `hd&#95;blue` and moves to the adjacent `table` element.
+       first                                                             ; Gets the first such element
+       &#40;s/select &#40;s/child &#40;s/tag :table&#41;                                 ; Traverses the heirarchy shown in the previous code snippet
+                          &#40;s/tag :tbody&#41;
+                          &#40;s/tag :tr&#41;
+                          &#40;s/tag :td&#41;
+                          &#40;s/tag :table&#41;
+                          &#40;s/tag :tbody&#41;
+                          &#40;s/tag :tr&#41;
+                          &#40;s/tag :td&#41;&#41;&#41;
+       &#40;mapcat &#40;fn &#91;td&#93;                                                  ; From here on, we are just extracting the text from the `td`s &#40;Unintended&#41;
+                 &#40;:content td&#41;&#41;&#41;
+       &#40;partition-all 2&#41;
+       &#40;take 7&#41;&#41;&#41;
+</code></pre><h2 id="telegram&#95;bot&#95;setup">Telegram bot setup</h2><p>Next step is to setup a bot for telegram, that will send up messages with data extracted in the previous steps. I chose <code>telegram</code> over <code>whatsapp</code> because of the simplicity of using its APIs.</p><h3 id="creating&#95;the&#95;bot&#95;and&#95;channel">Creating the bot and channel</h3><p>I need a bot that authenticates me to use telegram APIs and a channel where the bot will send me messages. I can have the bot send messages to me personally, but I'll have it send to a channel, so that all the members of the channel can see the updates.</p><p>Telegram has a special bot that creates other bots. It's rightly named the <code>@BotFather</code>. Sending a <code>/help</code> message lists all the available commands to interact with it. Most important for us is the <code>/newbot</code> command. This command triggers a flow to create new bot and asks a few questions related to it.</p><ul><li>Name of the new bot</li><li>A globally unique username that ends with <code>bot</code></li></ul><p>Once the bot is created, it sends a welcome message with the bot token and a link to chat with the bot. Bot token will be used to authenticate requests to the telegram API.</p><p>I'll also create a private channel and add the bot to it as an admin.</p><h3 id="sending&#95;message">Sending message</h3><p>Now, that I have the bot token and created the channel. I need the <code>channel&#95;id</code> to send the message to the channel. It's hard to find it on the telegram app or website. The way we'll do it is by using <a href='https://core.telegram.org/bots/api#getupdates'>getUpdates</a> API endpoint. This endpoint returns the data that bot has received using the long polling method. The data contains the <code>channel&#95;id</code> as well.</p><p>First step is to send a message in the channel I created, for the bot to receive it as update. So, I send a <code>hi</code> message in the telegram channel. To get the updates, I'll use the repl:<pre><code class="lang-clojure">&#40;require '&#91;clj-http.client :as http&#93;&#41;
+&#40;require '&#91;cheshire.core :as json&#93;&#41;
+
+&#40;def bot-token &quot;&lt;the-bot-token-from-previous-steps&gt;&quot;&#41;
+
+&#40;-&gt; &#40;str &quot;https://api.telegram.org/bot&quot; bot-token &quot;/getUpdates&quot;&#41;
+    &#40;http/get {:headers {:content-type &quot;application/json&quot;}}&#41;
+    :body
+    &#40;json/parse-string&#41;&#41;
+
+; {&quot;ok&quot; true,
+;  &quot;result&quot;
+;  &#91;{&quot;update&#95;id&quot; 242976779,
+;    &quot;channel&#95;post&quot;
+;    {&quot;message&#95;id&quot; 8,
+;     &quot;sender&#95;chat&quot;
+;     {&quot;id&quot; &lt;chat-id&gt;, &quot;title&quot; &quot;Bot Devel&quot;, &quot;type&quot; &quot;channel&quot;},
+;     &quot;chat&quot;
+;     {&quot;id&quot; &lt;chat-id&gt;, &quot;title&quot; &quot;Bot Devel&quot;, &quot;type&quot; &quot;channel&quot;},
+;     &quot;date&quot; 1731041338,
+;     &quot;text&quot; &quot;hi&quot;}}&#93;}
+</code></pre></p><p>The response is shown above. I get the <code>&lt;chat-id&gt;</code> from there, and save it for later use. Test sending the message by:<pre><code class="lang-clojure">&#40;def chat-id 1234434&#41; ; Replace this with &lt;chat-id&gt;
+
+&#40;-&gt; &#40;str &quot;https://api.telegram.org/bot&quot; bot-token &quot;/sendMessage&quot;&#41;
+    &#40;http/post {:headers {:content-type &quot;application/json&quot;}
+                :body &#40;json/encode {:chat&#95;id chat-id
+                                    :text &quot;Hello&quot;}&#41;}&#41;&#41;
+</code></pre></p><p>I get a <code>Hello</code> text on the telegram channel. Ready to assemble the <code>telegram.clj</code> file.</p><pre><code class="lang-clojure">&#40;ns telegram
+  &#40;:require &#91;clj-http.client :as http&#93;
+            &#91;cheshire.core :as json&#93;
+            &#91;config :as cfg&#93;&#41;&#41;
+
+&#40;def &#94;:private bot-url
+  &#40;str &quot;https://api.telegram.org/bot&quot; &#40;-&gt; cfg/telegram :bot-token&#41;&#41;&#41;
+
+&#40;defn- telegram-url &#91;method&#93;
+  &#40;case method
+    :send-message &#40;str bot-url &quot;/sendMessage&quot;&#41;
+    :get-updates &#40;str bot-url &quot;/getUpdates&quot;&#41;&#41;&#41;
+
+&#40;defn- channel-id &#91;channel&#93;
+  &#40;or &#40;get-in cfg/telegram &#91;:channel-ids channel&#93;&#41;
+      &#40;when &#40;= cfg/env :dev&#41;
+        &#40;get-in cfg/telegram &#91;:channel-ids :default&#93;&#41;&#41;&#41;&#41;
+
+&#40;defn send-message! &#91;channel message&#93;
+  &#40;http/post &#40;telegram-url :send-message&#41;
+             {:headers {:content-type &quot;application/json&quot;}
+              :body &#40;json/encode {:chat&#95;id &#40;channel-id channel&#41;
+                                  :text message
+                                  :parse&#95;mode &quot;HTML&quot;}&#41;}&#41;&#41;
+</code></pre><p><code>config</code> namespace comes from <code>env/dev/config.clj</code> file. The structure looks something like the following:<pre><code class="lang-clojure">&#40;ns config&#41;
+
+&#40;def telegram
+  {:bot-token &quot;&lt;bot-token&gt;&quot;
+   :channel-ids {:default &lt;chat-id&gt;}}&#41;
+
+&#40;def env :dev&#41;
+</code></pre></p><p><code>env/prod/config.clj</code> will have the same structure with prod related config.</p><p>The final <code>passport-status</code> namespace looks like the following, with some missing pieces and them integrated.<pre><code class="lang-clojure">
+&#40;ns passport-status
+  &#40;:require
+   &#91;clj-http.client :as http&#93;
+   &#91;hickory.core :as h&#93;
+   &#91;hickory.select :as s&#93;
+   &#91;clojure.string :as str&#93;
+   &#91;telegram :as tg&#93;&#41;&#41;
+
+&#40;def details
+  &#91;{:file-num &quot;ABC234324234&quot;
+    :dob &quot;15/09/1992&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;24/11/1987&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;10/01/1971&quot;}
+   {:file-num &quot;ABC234324234&quot;
+    :dob &quot;19/02/2001&quot;}&#93;&#41;
+
+&#40;def &#94;:private url
+  &quot;https://www.passportindia.gov.in/AppOnlineProject/statusTracker/trackStatusInpNew&quot;&#41;
+
+&#40;defn- fetch-resp &#91;{:keys &#91;file-num dob&#93;}&#93;
+  &#40;http/post url {:form-params {:optStatus &quot;Application&#95;Status&quot;
+                                :fileNo file-num
+                                :applDob dob
+                                :action:trackStatusForFileNoNew &quot;Track Status&quot;}}&#41;&#41;
+
+&#40;defn- select-data &#91;hickory&#93;
+  &#40;-&gt;&gt; hickory
+       &#40;s/select &#40;s/follow-adjacent &#40;s/class &quot;hd&#95;blue&quot;&#41; &#40;s/tag :table&#41;&#41;&#41;
+       first
+       &#40;s/select &#40;s/child &#40;s/tag :table&#41;
+                          &#40;s/tag :tbody&#41;
+                          &#40;s/tag :tr&#41;
+                          &#40;s/tag :td&#41;
+                          &#40;s/tag :table&#41;
+                          &#40;s/tag :tbody&#41;
+                          &#40;s/tag :tr&#41;
+                          &#40;s/tag :td&#41;&#41;&#41;
+       &#40;mapcat &#40;fn &#91;td&#93;
+                 &#40;:content td&#41;&#41;&#41;
+       &#40;partition-all 2&#41;
+       &#40;take 7&#41;&#41;&#41;
+
+&#40;defn- format-message &#91;data&#93;
+  &#40;-&gt;&gt; data
+       &#40;map &#40;fn &#91;&#91;key val&#93;&#93;
+              &#40;format &quot;&lt;b&gt;%s&lt;/b&gt;: %s&quot; &#40;str/trim key&#41; &#40;str/trim val&#41;&#41;&#41;&#41;
+       &#40;str/join &quot;\r\n&quot;&#41;
+       &#40;str &quot;&lt;b&gt;&lt;u&gt;&quot; &#40;java.time.LocalDate/now&#41;
+            &quot; &quot; &#40;-&gt; &#40;java.time.LocalTime/now&#41;
+                    str
+                    &#40;str/split #&quot;\.&quot;&#41;
+                    first&#41;
+            &quot;&lt;/u&gt;&lt;/b&gt; \r\n&quot;&#41;&#41;&#41;
+
+&#40;defn &#94;:export execute! &#91;&amp; &#95;&#93;
+  &#40;-&gt;&gt; details
+       &#40;pmap &#40;fn &#91;info&#93;
+               &#40;-&gt; &#40;fetch-resp info&#41;
+                   &#40;:body&#41;
+                   &#40;h/parse&#41;
+                   &#40;h/as-hickory&#41;&#41;&#41;&#41;
+       &#40;pmap select-data&#41;
+       &#40;pmap format-message&#41;
+       &#40;pmap #&#40;tg/send-message! :infinite %&#41;&#41;
+       &#40;doall&#41;&#41;&#41;
+</code></pre></p><p>Understanding the above code is left as an exercise to the reader. From the <code>passport-status</code> ns, I just need to call the <code>telegram/send-message!</code> with the channel and <a href='https://core.telegram.org/bots/api#formatting-options'>formatted message data</a>.</p><h2 id="deployment">Deployment</h2><p>Now, I need a way to setup a job that runs every 3 hours or so. I'll use an EC2 instance on AWS that I already use to host my personal projects.</p><p>First, I copy the project to the EC2 machine. Then, I use systemd timers for job scheduling because of its simple syntax and configuration.</p><p>I create two files for systemd config.</p><ul><li><code>passportstatus.service</code>: keeps the config about what commands to run that will execute the <code>passport-status/execute!</code> function.</li><li><code>passportstatus.timer</code>: keeps the timer configuration, when to run the job and how often.</li></ul><h4 id="passportstatus.timer">passportstatus.timer</h4><pre><code class="lang-systemd">&#91;Unit&#93;
+Description=&quot;Passport Fetch status&quot;
+
+&#91;Service&#93;
+WorkingDirectory=/home/user/automation
+ExecStart=/bin/bash -c &quot;/usr/local/bin/clojure -X:prod:passport&quot;
+</code></pre><h4 id="passportstatus.timer">passportstatus.timer</h4><pre><code class="lang-systemd">&#91;Unit&#93;
+Description=&quot;Run a job to fetch passport status.&quot;
+
+&#91;Timer&#93;
+OnStartupSec=5seconds
+OnBootSec=5min
+OnUnitActiveSec=24h
+OnCalendar=&#42;-&#42;-&#42; 09/3:00:00 # Runs every three hours starting at 9 AM.
+Unit=passportstatus.service
+
+&#91;Install&#93;
+WantedBy=multi-user.target
+</code></pre><p>Create softlinks to these files in <code>/etc/systemd/system</code> directory. And enable the <code>passportstatus.timer</code> unit by:<pre><code class="lang-sh">$ sudo systemctl enable passportstatus.timer
+</code></pre></p><h2 id="conclusion">Conclusion</h2><p>It was a fun little project, that would have taken a few days for me to finish, just a few months back. This exercise boosted my confidence in executing a project from scratch in clojure and getting to deployment. This is just the start of more automations, that'll come in the future.</p><p>Thanks for reading and stay tuned for more.</p>]]></content>
+  </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/aftermath-to-life.html</id>
     <link href="https://github.com/borkdude/quickblog/aftermath-to-life.html"/>
