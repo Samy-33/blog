@@ -2,6 +2,8 @@ Title: Clojure Automation #1
 Date: 2024-11-07
 Tags: clojure, fun, automation
 
+In this post, I share how I automated checking for passport application status using clojure from scratch.
+
 ## Content
 * [Why?](#why?)
 * [100 ft View](#100_ft_view)
