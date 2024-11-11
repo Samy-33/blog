@@ -39,7 +39,7 @@ This is how it's going to work:
 * Send a notification to a chat app (whatsapp or telegram)
 
 ## Project Setup
-I start by defining the `deps.edn` file in the project root. This is the beginning of the project. `deps.edn` will contains the project dependencies and configuration for build and release.
+I start by defining the `deps.edn` file in the project root. This is the beginning of the project. `deps.edn` will contain the project dependencies and configuration for build and release.
 
 Which dependencies will I need?
 * To scrape information
@@ -393,7 +393,7 @@ I create two files for systemd config.
 * `passportstatus.service`: keeps the config about what commands to run that will execute the `passport-status/execute!` function.
 * `passportstatus.timer`: keeps the timer configuration, when to run the job and how often.
 
-#### passportstatus.timer 
+#### passportstatus.service 
 ```systemd
 [Unit]
 Description="Passport Fetch status"
