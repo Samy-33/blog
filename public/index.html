@@ -81,6 +81,32 @@
 
       
     <div>
+        <h1><a href="notes.html">Notes</a></h1>
+        <h2 id="why?">Why?</h2><p>Keeping a list of public notes, that I found interesting or useful in my day to day work.</p><h2 id="content">Content</h2><ul><li><a href='#exposing_local_server_to_internet'>Exposing local server to Internet</a></li></ul><h3 id="exposing&#95;local&#95;server&#95;to&#95;internet">Exposing local server to Internet</h3><p>Cloudflare makes <code>cloudflared</code> available for tunneling purpose.</p><ul><li>Install by <code>sudo pacman -Sy cloudflared</code></li><li>Run to expose a http server running on port 3000 by <code>cloudflared tunnel --url http://localhost:3000</code></li><li>We get a public url like: <code>https://pollution-lmao-occasions-dracony.trycloudflare.com</code></li></ul>
+        
+        
+        <p><i>Published: 2024-11-26</i></p>
+        
+            <p><i>
+                Tagged:
+                
+                    <span class="tag">
+                        <a href="tags/findings.html">findings</a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="tags/til.html">til</a>
+                    </span>
+                
+                    <span class="tag">
+                        <a href="tags/keeps.html">keeps</a>
+                    </span>
+                
+            </i></p>
+        
+    </div>
+
+    <div>
         <h1><a href="clj-automation-1.html">Clojure Automation #1</a></h1>
         <p>In this post, I share how I automated checking for passport application status using clojure from scratch.</p><h2 id="content">Content</h2><ul><li><a href='#why?'>Why?</a></li><li><a href='#100_ft_view'>100 ft View</a></li><li><a href='#project_setup'>Project Setup</a></li><li><a href='#scraping_information'>Scraping Information</a><ul><li>Figuring out the API</li><li>Parsing Information</li></ul></li><li><a href='#telegram_bot_setup'>Telegram Bot Setup</a><ul><li>Creating the bot and channel</li><li>Sending message</li></ul></li><li><a href='#deployment'>Deployment</a></li><li><a href='#conclusion'>Conclusion</a></li></ul><h2 id="why?">Why?</h2><p>My whole family has applied for new passports, and I want to know the application status. But every time I open the <a href='https://www.passportindia.gov.in/AppOnlineProject/welcomeLink'>website</a>, I feel like giving up on life.</p><p>What could be worse, you say? Well, doing it four times.</p><p>Now, I use <code>Check Application Status</code> option on the homepage. It's an optimization by storing <code>File Numbers</code> and <code>Date of Births</code> in my BitWarden extension. That helps avoid having to fill the Captcha and logging in multiple times. It still hurts, albeit a bit less.</p><p>I abhor the 2 minutes, I spend each time I have to check the status. So, I'll spend next 5 hours setting up an automation script to notify me every 3 hours.</p><h2 id="100&#95;ft&#95;view">100 ft View</h2><p>I will need the following:</p><ul><li>A job running every 3 hours</li><li>A way to fetch passport application status</li><li>A way to notify me</li></ul><p>This is how it's going to work:</p><ul><li>At the onset of each 3rd hour, run a script</li><li>Script will scrape the information from passport status webpage</li><li>Parse out required information from the scraped page</li><li>Send a notification to a chat app (whatsapp or telegram)</li></ul><h2 id="project&#95;setup">Project Setup</h2><p>I start by defining the <code>deps.edn</code> file in the project root. This is the beginning of the project. <code>deps.edn</code> will contain the project dependencies and configuration for build and release.</p><p>Which dependencies will I need?</p><ul><li>To scrape information<ul><li>HTTP Client</li><li>HTML Parser and Selector</li><li>JSON encoder and decoder to convert from clojure data structures to JSON</li></ul></li><li>To send messages to Telegram<ul><li>Again the same dependencies, except HTML Parser</li></ul></li><li>For development a REPL server library</li></ul><p><code>deps.edn</code> file looks like the following:</p><pre><code class="lang-clojure">; deps.edn
 {:paths &#91;&quot;src&quot;&#93;                                                     ; Where the source code lives
@@ -374,28 +400,6 @@ WantedBy=multi-user.target
                 
                     <span class="tag">
                         <a href="tags/family.html">family</a>
-                    </span>
-                
-            </i></p>
-        
-    </div>
-
-    <div>
-        <h1><a href="unfinished-suffering.html">[Unfinished] Suffering</a></h1>
-        <p>We keep romanticizing suffering. That's all okay. But, if that's all we do about our suffering, we are going in the wrong direction.</p><p>Suffering is necessary to feel the joy from its absence. But what if suffering itself becomes joyful. We lose the incentive to overcome it.</p><p>We don't think about the end of the dark tunnel, the dawn after a dark stormy night.</p><p>We are content with the suffering itself because it's common among our peers. The good old sense of belonging wins over the will to rid ourselves of the pain.</p><p>That's why I prefer solitude. There's no other that I subconsciously mimic. There's no one I secretly love, envy or hate. I am an open book, when alone, albeit a messed up one.</p><p>A whole lot of us dislike change, including me. Mainly the ones that come unexpectedly, that we have no idea about.</p><p>eof</p>
-        
-        
-        <p><i>Published: 2024-06-08</i></p>
-        
-            <p><i>
-                Tagged:
-                
-                    <span class="tag">
-                        <a href="tags/unfinished.html">unfinished</a>
-                    </span>
-                
-                    <span class="tag">
-                        <a href="tags/thought.html">thought</a>
                     </span>
                 
             </i></p>

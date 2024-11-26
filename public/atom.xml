@@ -3,11 +3,18 @@
   <title>Abstract Symphony</title>
   <link href="https://github.com/borkdude/quickblog/atom.xml" rel="self"/>
   <link href="https://github.com/borkdude/quickblog"/>
-  <updated>2024-11-11T10:53:31+00:00</updated>
+  <updated>2024-11-26T05:10:48+00:00</updated>
   <id>https://github.com/borkdude/quickblog</id>
   <author>
     <name>Quick Blogger</name>
   </author>
+  <entry>
+    <id>https://github.com/borkdude/quickblog/notes.html</id>
+    <link href="https://github.com/borkdude/quickblog/notes.html"/>
+    <title>Notes</title>
+    <updated>2024-11-26T23:59:59+00:00</updated>
+    <content type="html"><![CDATA[<h2 id="why?">Why?</h2><p>Keeping a list of public notes, that I found interesting or useful in my day to day work.</p><h2 id="content">Content</h2><ul><li><a href='#exposing_local_server_to_internet'>Exposing local server to Internet</a></li></ul><h3 id="exposing&#95;local&#95;server&#95;to&#95;internet">Exposing local server to Internet</h3><p>Cloudflare makes <code>cloudflared</code> available for tunneling purpose.</p><ul><li>Install by <code>sudo pacman -Sy cloudflared</code></li><li>Run to expose a http server running on port 3000 by <code>cloudflared tunnel --url http://localhost:3000</code></li><li>We get a public url like: <code>https://pollution-lmao-occasions-dracony.trycloudflare.com</code></li></ul>]]></content>
+  </entry>
   <entry>
     <id>https://github.com/borkdude/quickblog/clj-automation-1.html</id>
     <link href="https://github.com/borkdude/quickblog/clj-automation-1.html"/>
